@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Shopping Guide - Rewe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e5e5e5;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    padding-bottom: 100px;
+  }
+
+  h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    color: #4ade80;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
+
+  .card {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .card p { font-size: 0.9rem; color: #aaa; line-height: 1.5; }
+
+  .green { color: #4ade80; }
+  .red { color: #ef4444; }
+  .yellow { color: #facc15; }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.95rem;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .check {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border: 2px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .check.checked {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+
+  .check.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .checked-item { text-decoration: line-through; color: #666; }
+
+  /* Sugar meter */
+  .sugar-meter {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .cube {
+    width: 20px;
+    height: 20px;
+    background: #ef4444;
+    border-radius: 3px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .versus-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 0.9rem;
+  }
+
+  .badge-bad {
+    background: #2d1b1b;
+    color: #fca5a5;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .badge-good {
+    background: #1b2d1b;
+    color: #86efac;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .arrow { color: #facc15; font-weight: 700; }
+
+  /* Meal planner */
+  .meal-option {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .meal-option.selected { border-color: #22c55e; }
+
+  .meal-option h3 { margin-bottom: 4px; }
+
+  .ingredients {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+  }
+
+  .meal-option.selected .ingredients { display: block; }
+
+  .price-tag {
+    display: inline-block;
+    background: #166534;
+    color: #4ade80;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  /* Label check */
+  .label-rule {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .label-rule .icon {
+    font-size: 1.5rem;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  .label-rule strong { color: #fff; }
+
+  /* Shopping input */
+  .add-item {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .add-item input {
+    flex: 1;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+
+  .add-item button {
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .divider {
+    height: 1px;
+    background: #333;
+    margin: 24px 0;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex;
+    padding: 8px 0;
+    z-index: 100;
+  }
+
+  .bottom-nav a {
+    flex: 1;
+    text-align: center;
+    color: #888;
+    text-decoration: none;
+    font-size: 0.7rem;
+    padding: 4px;
+  }
+
+  .bottom-nav a.active { color: #4ade80; }
+  .bottom-nav a span { font-size: 1.3rem; display: block; }
+
+  section { scroll-margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>🛒 Smart Shopping Guide</h1>
+<p class="subtitle">Your pocket guide for healthy shopping at Rewe</p>
+
+<div class="divider"></div>
+
+<!-- SECTION: Label Check -->
+<section id="labels">
+<h2>🏷️ How to Read Labels</h2>
+
+<div class="label-rule">
+  <div class="icon">🔍</div>
+  <div>
+    <strong>Sugar per 100g</strong>
+    <p style="font-size:0.85rem; color:#aaa;">
+      <span class="green">LOW: under 5g</span> ·
+      <span class="yellow">MEDIUM: 5-15g</span> ·
+      <span class="red">HIGH: over 15g</span>
+    </p>
+  </div>
+</div>
+
+<div class="label-rule">
+  <div class="icon">📋</div>
+  <div>
+    <strong>Ingredients list</strong>
+    <p style="font-size:0.85rem; color:#aaa;">Listed by amount (most → least). If sugar is in top 3: put it back!</p>
+  </div>
+</div>
+
+<div class="label-rule">
+  <div class="icon">⚖️</div>
+  <div>
+    <strong>Serving size trick</strong>
+    <p style="font-size:0.85rem; color:#aaa;">Always compare per 100g, not "per serving". Companies use tiny servings to hide sugar.</p>
+  </div>
+</div>
+
+<div class="label-rule" style="border:none;">
+  <div class="icon">⚠️</div>
+  <div>
+    <strong>Secret sugar names</strong>
+    <p style="font-size:0.85rem; color:#aaa;">Glucose, fructose, maltose, dextrose, corn syrup, agave, maltodextrin, invert sugar — all sugar!</p>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: Sugar in common products -->
+<section id="sugar">
+<h2>🧊 Sugar Cubes in Common Products</h2>
+
+<div class="card">
+  <h3>Coca-Cola 0.5L</h3>
+  <div class="sugar-meter">
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div>
+  </div>
+  <p style="font-size:0.8rem; color:#ef4444; margin-top:4px;">17 cubes (53g) — 2x daily limit!</p>
+</div>
+
+<div class="card">
+  <h3>Orange Juice 250ml</h3>
+  <div class="sugar-meter">
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+  </div>
+  <p style="font-size:0.8rem; color:#ef4444; margin-top:4px;">6 cubes — almost your whole daily limit</p>
+</div>
+
+<div class="card">
+  <h3>Fruit Yogurt 150g</h3>
+  <div class="sugar-meter">
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+    <div class="cube">🧊</div><div class="cube">🧊</div>
+  </div>
+  <p style="font-size:0.8rem; color:#facc15; margin-top:4px;">5 cubes — "healthy" but loaded with sugar</p>
+</div>
+
+<div class="card">
+  <h3>Ketchup (3 tbsp)</h3>
+  <div class="sugar-meter">
+    <div class="cube">🧊</div><div class="cube">🧊</div><div class="cube">🧊</div>
+  </div>
+  <p style="font-size:0.8rem; color:#facc15; margin-top:4px;">3 cubes — in a sauce!</p>
+</div>
+
+<p style="font-size:0.85rem; color:#888; margin-top:12px;">WHO daily limit: <span class="green">25g = 6 cubes</span></p>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: Smart Swaps -->
+<section id="swaps">
+<h2>🔄 Smart Swaps</h2>
+
+<div class="versus-row">
+  <span class="badge-bad">🥤 Soda</span>
+  <span class="arrow">→</span>
+  <span class="badge-good">💧 Water + lemon</span>
+</div>
+<div class="versus-row">
+  <span class="badge-bad">🍫 Chocolate bar</span>
+  <span class="arrow">→</span>
+  <span class="badge-good">🥜 Nuts + dark choc</span>
+</div>
+<div class="versus-row">
+  <span class="badge-bad">🍞 White bread</span>
+  <span class="arrow">→</span>
+  <span class="badge-good">🌾 Whole grain</span>
+</div>
+<div class="versus-row">
+  <span class="badge-bad">🍬 Gummy bears</span>
+  <span class="arrow">→</span>
+  <span class="badge-good">🍎 Apple + PB</span>
+</div>
+<div class="versus-row">
+  <span class="badge-bad">🥣 Sweet cereal</span>
+  <span class="arrow">→</span>
+  <span class="badge-good">🥣 Oats + banana</span>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: Meal Ideas -->
+<section id="meals">
+<h2>🍳 Meal Ideas (pick one!)</h2>
+
+<div class="meal-option" onclick="toggleMeal(this)">
+  <h3>🍝 Pasta with Veggie Sauce</h3>
+  <span class="price-tag">~€5 for 4</span>
+  <div class="ingredients">
+    <ul class="checklist" id="pasta-list">
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Pasta (500g)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Canned tomatoes (1 can)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Onion (1)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Garlic (1 bulb)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Bell pepper (1-2)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Olive oil</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Salt & pepper</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Cheese (optional)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="meal-option" onclick="toggleMeal(this)">
+  <h3>🥗 Big Salad Bowl</h3>
+  <span class="price-tag">~€6 for 4</span>
+  <div class="ingredients">
+    <ul class="checklist">
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Lettuce / mixed greens</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Tomatoes (3-4)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Cucumber (1)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Corn (1 can)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Eggs (4)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Bread / baguette</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Olive oil + lemon</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Salt & pepper</li>
+    </ul>
+  </div>
+</div>
+
+<div class="meal-option" onclick="toggleMeal(this)">
+  <h3>🍳 Veggie Stir-Fry + Rice</h3>
+  <span class="price-tag">~€5 for 4</span>
+  <div class="ingredients">
+    <ul class="checklist">
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Rice (500g)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Zucchini (1)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Carrots (2-3)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Bell pepper (1)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Soy sauce</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Garlic</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Oil for cooking</li>
+    </ul>
+  </div>
+</div>
+
+<div class="meal-option" onclick="toggleMeal(this)">
+  <h3>🥙 Build-Your-Own Wraps</h3>
+  <span class="price-tag">~€7 for 4</span>
+  <div class="ingredients">
+    <ul class="checklist">
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Tortilla wraps (pack)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Lettuce</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Tomatoes</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Cucumber</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Cheese (sliced or grated)</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Hummus or cream cheese</li>
+      <li><div class="check" onclick="event.stopPropagation(); toggleCheck(this)"></div>Optional: chicken breast</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: Custom shopping list -->
+<section id="list">
+<h2>📝 Your Shopping List</h2>
+<p class="subtitle">Add your own items</p>
+
+<ul class="checklist" id="custom-list"></ul>
+
+<div class="add-item">
+  <input type="text" id="new-item" placeholder="Add item..." onkeydown="if(event.key==='Enter')addItem()">
+  <button onclick="addItem()">+ Add</button>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: Rewe Tips -->
+<section id="tips">
+<h2>💡 Rewe Tips</h2>
+
+<div class="card">
+  <h3>🏷️ "Ja!" Brand</h3>
+  <p>Cheapest option for basics (pasta, rice, canned goods). Same quality, lower price.</p>
+</div>
+
+<div class="card">
+  <h3>🌿 "REWE Bio"</h3>
+  <p>Organic option. Worth it for eggs and dairy. Not necessary for everything.</p>
+</div>
+
+<div class="card">
+  <h3>📢 "Angebot" Signs</h3>
+  <p>Sales/deals — look for red or yellow price tags. Great for saving money!</p>
+</div>
+
+<div class="card">
+  <h3>🥕 Loose > Packaged</h3>
+  <p>Buy loose vegetables instead of pre-packaged. Cheaper + less plastic.</p>
+</div>
+
+<div class="card">
+  <h3>⚖️ Price per kg</h3>
+  <p>Always check the small print on the price label — it shows price per kilo. That's the real comparison.</p>
+</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: The Plate Rule -->
+<section id="plate">
+<h2>🍽️ The Healthy Plate</h2>
+<div class="card" style="text-align:center; padding:20px;">
+  <p style="font-size:0.95rem; margin-bottom:12px;">Every meal should be roughly:</p>
+  <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+    <span class="badge-good" style="font-size:1rem; padding:8px 14px;">🥬 50% Veggies</span>
+    <span style="background:#1e3a5f; color:#93c5fd; padding:8px 14px; border-radius:8px; font-size:1rem;">🍗 25% Protein</span>
+    <span style="background:#713f12; color:#fde047; padding:8px 14px; border-radius:8px; font-size:1rem;">🍚 25% Carbs</span>
+  </div>
+</div>
+</section>
+
+<div style="height:60px;"></div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="#labels" class="active"><span>🏷️</span>Labels</a>
+  <a href="#sugar"><span>🧊</span>Sugar</a>
+  <a href="#meals"><span>🍳</span>Meals</a>
+  <a href="#list"><span>📝</span>List</a>
+  <a href="#tips"><span>💡</span>Tips</a>
+</nav>
+
+<script>
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    const li = el.parentElement;
+    const textSpan = li.childNodes[1];
+    if (el.classList.contains('checked')) {
+      li.style.color = '#666';
+      li.style.textDecoration = 'line-through';
+    } else {
+      li.style.color = '';
+      li.style.textDecoration = '';
+    }
+  }
+
+  function toggleMeal(el) {
+    document.querySelectorAll('.meal-option').forEach(m => {
+      if (m !== el) m.classList.remove('selected');
+    });
+    el.classList.toggle('selected');
+  }
+
+  function addItem() {
+    const input = document.getElementById('new-item');
+    const val = input.value.trim();
+    if (!val) return;
+
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="check" onclick="toggleCheck(this)"></div>${val}<span style="margin-left:auto;cursor:pointer;color:#666;font-size:0.8rem;" onclick="this.parentElement.remove()">✕</span>`;
+    document.getElementById('custom-list').appendChild(li);
+    input.value = '';
+    input.focus();
+  }
+
+  // Bottom nav active state
+  document.querySelectorAll('.bottom-nav a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.querySelectorAll('.bottom-nav a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

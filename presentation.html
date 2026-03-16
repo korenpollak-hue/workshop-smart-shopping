@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Shopping Workshop — NOVA System</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nova1: #22c55e; --nova1-bg: #0d2818; --nova1-light: #86efac;
+    --nova2: #60a5fa; --nova2-bg: #172554; --nova2-light: #93c5fd;
+    --nova3: #facc15; --nova3-bg: #451a03; --nova3-light: #fde047;
+    --nova4: #ef4444; --nova4-bg: #450a0a; --nova4-light: #fca5a5;
+  }
+
+  .reveal { font-family: 'Inter', sans-serif; }
+  .reveal h1 { font-family: 'Playfair Display', serif; font-size: 3.8em; font-weight: 900; text-transform: none; letter-spacing: -0.03em; line-height: 1.1; }
+  .reveal h2 { font-family: 'Playfair Display', serif; font-size: 2.4em; font-weight: 700; text-transform: none; letter-spacing: -0.02em; }
+  .reveal h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.4em; font-weight: 700; text-transform: none; }
+  .reveal p { font-size: 1.1em; line-height: 1.6; }
+  .reveal section { padding: 40px; }
+  .reveal .handwritten { font-family: 'Caveat', cursive; }
+
+  .green { color: var(--nova1); }
+  .blue { color: var(--nova2); }
+  .yellow { color: var(--nova3); }
+  .red { color: var(--nova4); }
+  .dim { color: #888; }
+  .bright { color: #fff; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 8px 22px; border-radius: 30px; font-size: 0.65em; font-weight: 700; margin: 4px; font-family: 'Space Grotesk', sans-serif; }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-blue { background: rgba(96,165,250,0.15); color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
+  .tag-yellow { background: rgba(250,204,21,0.15); color: #fde047; border: 1px solid rgba(250,204,21,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+  /* Glass bubble for question slides */
+  .q-bubble {
+    background: rgba(255,255,255,0.04);
+    border-radius: 32px;
+    padding: 50px 60px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    max-width: 850px;
+    margin: 0 auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  }
+
+  /* NOVA 4-group overview */
+  .nova-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .nova-card {
+    border-radius: 20px; padding: 28px; text-align: left; position: relative; overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+  }
+  .nova-card:hover { transform: translateY(-6px); }
+  .nova-card::after {
+    content: attr(data-num); position: absolute; top: -30px; right: -15px;
+    font-size: 10em; font-weight: 900; opacity: 0.07; font-family: 'Playfair Display', serif; line-height: 1;
+  }
+  .nova-card h3 { margin: 0 0 6px; color: #fff; font-size: 1.15em; }
+  .nova-card p { font-size: 0.75em; color: rgba(255,255,255,0.65); margin: 0; }
+  .nova-card .items { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .nova-card .items span { padding: 4px 12px; border-radius: 10px; font-size: 0.65em; font-weight: 600; }
+  .n1 { background: linear-gradient(135deg, #0d2818, #166534); border: 2px solid var(--nova1); box-shadow: 0 0 40px rgba(34,197,94,0.1); }
+  .n1 .items span { background: rgba(34,197,94,0.15); color: #86efac; }
+  .n2 { background: linear-gradient(135deg, #0c1a3a, #1e3a5f); border: 2px solid var(--nova2); box-shadow: 0 0 40px rgba(96,165,250,0.1); }
+  .n2 .items span { background: rgba(96,165,250,0.15); color: #93c5fd; }
+  .n3 { background: linear-gradient(135deg, #2d1a00, #713f12); border: 2px solid var(--nova3); box-shadow: 0 0 40px rgba(250,204,21,0.1); }
+  .n3 .items span { background: rgba(250,204,21,0.15); color: #fcd34d; }
+  .n4 { background: linear-gradient(135deg, #2a0a0a, #7f1d1d); border: 2px solid var(--nova4); box-shadow: 0 0 40px rgba(239,68,68,0.1); }
+  .n4 .items span { background: rgba(239,68,68,0.15); color: #fca5a5; }
+
+  /* Detail slide (NOVA 1 & 4 deep dives) */
+  .nova-detail {
+    display: flex !important; gap: 40px; align-items: center;
+    border-radius: 28px; padding: 44px;
+  }
+  .nova-detail .big-num { font-size: 11em; font-weight: 900; font-family: 'Playfair Display', serif; line-height: 0.85; min-width: 200px; text-align: center; }
+  .nova-detail .detail-right { text-align: left; }
+  .nova-detail .detail-right h3 { font-size: 1.5em; color: #fff; margin: 0 0 10px; }
+  .nova-detail .detail-right p { font-size: 0.9em; color: rgba(255,255,255,0.75); }
+  .food-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .food-chip { padding: 7px 16px; border-radius: 12px; font-size: 0.8em; font-weight: 600; }
+
+  /* Swap rows */
+  .swap-row { display: flex !important; align-items: center; gap: 16px; margin: 10px 0; }
+  .swap-bad {
+    background: linear-gradient(135deg, #1f0a0a, #2d1212); border: 2px solid var(--nova4);
+    border-radius: 18px; padding: 16px 24px; text-align: center; font-size: 0.85em; flex: 1;
+    transition: transform 0.3s; box-shadow: 0 0 25px rgba(239,68,68,0.08);
+  }
+  .swap-good {
+    background: linear-gradient(135deg, #0a1f0a, #122d12); border: 2px solid var(--nova1);
+    border-radius: 18px; padding: 16px 24px; text-align: center; font-size: 0.85em; flex: 1;
+    transition: transform 0.3s; box-shadow: 0 0 25px rgba(34,197,94,0.08);
+  }
+  .swap-bad:hover, .swap-good:hover { transform: scale(1.03); }
+  .swap-arrow { font-size: 1.8em; color: var(--nova3); min-width: 50px; text-align: center; }
+
+  /* Snack grid */
+  .snack-grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 18px; }
+  .snack-card {
+    background: linear-gradient(145deg, #0a1f0a, #162d16); border-radius: 18px; padding: 24px;
+    text-align: center; border: 1px solid rgba(34,197,94,0.2);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+  }
+  .snack-card:hover { transform: translateY(-8px) scale(1.03); box-shadow: 0 20px 40px rgba(34,197,94,0.15); }
+  .snack-card .emoji { font-size: 2.5em; margin-bottom: 8px; }
+  .snack-card p { font-size: 0.8em; color: #86efac; margin: 0; }
+
+  /* Game grid */
+  .game-grid { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
+  .game-item {
+    background: rgba(255,255,255,0.03); border-radius: 18px; padding: 18px; text-align: center;
+    cursor: pointer; border: 3px solid rgba(255,255,255,0.1); font-size: 0.9em;
+    transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .game-item:hover { transform: scale(1.1); border-color: rgba(255,255,255,0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .game-item .emoji { font-size: 2.2em; display: block; margin-bottom: 6px; }
+  .game-item.revealed-1 { border-color: var(--nova1); background: var(--nova1-bg); box-shadow: 0 0 40px rgba(34,197,94,0.25); }
+  .game-item.revealed-2 { border-color: var(--nova2); background: var(--nova2-bg); box-shadow: 0 0 40px rgba(96,165,250,0.25); }
+  .game-item.revealed-3 { border-color: var(--nova3); background: var(--nova3-bg); box-shadow: 0 0 40px rgba(250,204,21,0.25); }
+  .game-item.revealed-4 { border-color: var(--nova4); background: var(--nova4-bg); box-shadow: 0 0 40px rgba(239,68,68,0.25); }
+
+  /* Label cards */
+  .two-col { display: grid !important; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 18px; }
+  .label-card { border-radius: 22px; padding: 30px; text-align: left; }
+  .label-card h3 { margin-top: 0; font-size: 1.1em; }
+  .label-card ul { list-style: none; padding: 0; margin: 0; }
+  .label-card ul li { padding: 7px 0; font-size: 0.8em; position: relative; padding-left: 24px; }
+  .label-card ul li::before { content: ''; position: absolute; left: 0; top: 15px; width: 10px; height: 10px; border-radius: 50%; }
+  .red-card { background: linear-gradient(145deg, #1f0a0a, #2d1212); border: 2px solid var(--nova4); box-shadow: 0 0 35px rgba(239,68,68,0.08); }
+  .red-card ul li::before { background: var(--nova4); }
+  .green-card { background: linear-gradient(145deg, #0a1f0a, #122d12); border: 2px solid var(--nova1); box-shadow: 0 0 35px rgba(34,197,94,0.08); }
+  .green-card ul li::before { background: var(--nova1); }
+
+  /* Action cards */
+  .card-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 18px; }
+  .action-card {
+    background: rgba(255,255,255,0.03); border-radius: 22px; padding: 30px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+  }
+  .action-card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px rgba(0,0,0,0.35); }
+  .action-card .icon { font-size: 2.8em; margin-bottom: 10px; }
+  .action-card h3 { margin: 0 0 6px; font-size: 1.15em; }
+  .action-card p { font-size: 0.75em; color: #aaa; margin: 0; }
+
+  /* Mission card */
+  .mission-card {
+    background: linear-gradient(145deg, #0d2818, #1a3a2a); border: 3px solid var(--nova1);
+    border-radius: 28px; padding: 36px; text-align: left; box-shadow: 0 0 60px rgba(34,197,94,0.1);
+  }
+  .mission-card ul { list-style: none; padding: 0; margin: 14px 0 0; }
+  .mission-card ul li { padding: 10px 0; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); position: relative; padding-left: 28px; }
+  .mission-card ul li:last-child { border: 0; }
+  .mission-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--nova1); font-weight: 700; }
+
+  /* Challenge box */
+  .challenge-box {
+    background: linear-gradient(145deg, #0a1a3e, #0d2818); border: 3px solid var(--nova1);
+    border-radius: 28px; padding: 44px; text-align: center; box-shadow: 0 0 80px rgba(34,197,94,0.12);
+    position: relative; overflow: hidden;
+  }
+  .challenge-box::before {
+    content: '🏆'; position: absolute; top: -20px; left: -20px; font-size: 10em; opacity: 0.04;
+  }
+  .challenge-box ul { list-style: none; padding: 0; text-align: left; max-width: 520px; margin: 14px auto; }
+  .challenge-box ul li { padding: 6px 0; font-size: 0.85em; padding-left: 24px; position: relative; }
+  .challenge-box ul li::before { content: '✓'; position: absolute; left: 0; color: var(--nova1); font-weight: 700; }
+
+  /* Chart container */
+  .chart-container { max-width: 350px; margin: 20px auto; }
+
+  /* Stat callouts */
+  .stat-row { display: flex !important; gap: 50px; justify-content: center; margin: 25px 0; }
+  .stat { text-align: center; }
+  .stat .number { font-size: 4.5em; font-weight: 900; font-family: 'Playfair Display', serif; display: block; line-height: 1; }
+  .stat .label { font-size: 0.7em; color: #888; margin-top: 4px; font-family: 'Space Grotesk', sans-serif; }
+
+  /* Typed cursor */
+  .typed-cursor { color: var(--nova1); font-weight: 100; }
+
+  /* Rough notation targets */
+  .annotate-me { display: inline; }
+
+  /* Floating particles bg */
+  .particles-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;
+  }
+  .particle {
+    position: absolute; border-radius: 50%; opacity: 0.15;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.15; }
+    90% { opacity: 0.15; }
+    100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+  }
+
+  /* Grandma slide special */
+  .grandma-quote {
+    font-family: 'Caveat', cursive; font-size: 2.6em; color: #fff;
+    line-height: 1.3; font-weight: 700;
+  }
+
+  /* Pulse animation for important items */
+  @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 30px 10px rgba(34,197,94,0.15); } }
+  @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 30px 10px rgba(239,68,68,0.15); } }
+  .pulse-green { animation: pulse-green 2.5s ease-in-out infinite; }
+  .pulse-red { animation: pulse-red 2.5s ease-in-out infinite; }
+
+  /* Vertical separator */
+  .v-sep { width: 2px; height: 60px; background: rgba(255,255,255,0.1); margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ========================================================= -->
+<!-- SLIDE 1: TITLE — Cinematic, floating particles, typed.js  -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(135deg, #020208 0%, #0a0520 25%, #0d2818 50%, #0a0520 75%, #020208 100%)" data-transition="zoom" data-transition-speed="slow">
+  <div class="particles-bg" id="titleParticles"></div>
+  <p style="font-size:0.6em; letter-spacing:8px; text-transform:uppercase; color:rgba(74,222,128,0.6); font-family:'Space Grotesk',sans-serif;">Interactive Workshop</p>
+  <h1 style="font-size:4.5em; margin-top:10px;">Smart Shopping<br>& <span class="green">Healthy Cooking</span></h1>
+  <p class="dim" style="font-size:1em; margin-top:20px;"><span id="typed-subtitle"></span></p>
+  <div style="margin-top:40px;">
+    <span class="tag tag-green">60 min</span>
+    <span class="tag tag-blue">Interactive</span>
+    <span class="tag tag-yellow">Then: Rewe!</span>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 2: BREAKFAST — Warm tones, emoji rain              -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(ellipse at 30% 50%, #2d1a08 0%, #0a0805 60%, #050505 100%)" data-transition="slide">
+  <p style="font-size:5em; margin-bottom:10px;" class="animate__animated animate__bounceIn">🍳</p>
+  <div class="q-bubble">
+    <h2 style="font-size:2.6em;">What did you eat<br><span class="yellow">this morning?</span></h2>
+    <p class="dim fragment fade-up" style="margin-top:16px; font-size:0.9em;">Cornetto? Cappuccino? Nothing? — Shout it out!</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 3: DRINKS — Water vs soda, split background        -->
+<!-- ========================================================= -->
+<section data-transition="slide">
+  <div style="position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(180deg,#040a1a,#0a1a3a);z-index:-1;"></div>
+  <div style="position:absolute;top:0;right:0;width:50%;height:100%;background:linear-gradient(180deg,#1a0505,#2d0a0a);z-index:-1;"></div>
+  <p style="font-size:5em;" class="animate__animated animate__fadeIn">💧 &nbsp; 🆚 &nbsp; 🥤</p>
+  <h2 style="font-size:2.8em;">More <span class="blue">water</span> or <span class="red">sweet drinks?</span></h2>
+  <div class="fragment fade-up" style="margin-top:30px;">
+    <div class="stat-row">
+      <div class="stat"><span class="number red" id="sugarCount">10</span><span class="label">sugar cubes in 1 Coke</span></div>
+      <div class="stat"><span class="number blue">0</span><span class="label">sugar cubes in water</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 4: THE KEY QUESTION — Dramatic zoom, dark          -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(circle at 50% 40%, #1a1a2e 0%, #050508 65%)" data-transition="convex" data-transition-speed="slow">
+  <p style="font-size:5em;" class="animate__animated animate__pulse animate__infinite animate__slower">🤔</p>
+  <h2 style="font-size:2.8em; margin-top:10px;">How do you know if food is<br><span class="green">real</span> or <span class="red">factory-made?</span></h2>
+  <div class="v-sep fragment"></div>
+  <p class="fragment dim" style="font-size:0.9em;">There's a system for that...</p>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 5: INTRODUCING NOVA — Big reveal, fragments        -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(135deg, #020205 0%, #080510 30%, #0a1a0a 60%, #020205 100%)" data-transition="fade" data-transition-speed="slow">
+  <p style="font-size:0.6em; letter-spacing:5px; text-transform:uppercase; color:#666; font-family:'Space Grotesk',sans-serif;">A simple system to understand food</p>
+  <h1 style="font-size:5.5em; margin-top:0;">The <span class="green">NOVA</span> System</h1>
+  <p class="dim fragment fade-up" style="font-size:1em; max-width:700px; margin:15px auto 0;">
+    Scientists created <strong style="color:#fff;">4 groups</strong> to classify any food.<br>
+    Once you learn this, you'll never shop the same way.
+  </p>
+  <div class="fragment fade-up" style="margin-top:35px;">
+    <span class="tag tag-green">1 — Eat most</span>
+    <span class="tag tag-blue">2 — Cooking</span>
+    <span class="tag tag-yellow">3 — Sometimes</span>
+    <span class="tag tag-red">4 — Rarely</span>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 6: NOVA OVERVIEW — 4 cards + chart                 -->
+<!-- ========================================================= -->
+<section data-background="#060610" data-transition="slide">
+  <h2 style="margin-bottom:5px;">The 4 NOVA Groups</h2>
+  <div style="display:flex !important; gap:30px; align-items:flex-start; margin-top:10px;">
+    <div style="flex:1;">
+      <div class="nova-grid">
+        <div class="nova-card n1 fragment fade-right" data-num="1">
+          <h3><span class="green">1</span> · Unprocessed</h3>
+          <p>As nature made it</p>
+          <div class="items"><span>🍎 Fruits</span><span>🥬 Veggies</span><span>🥚 Eggs</span><span>🍗 Meat</span><span>🍚 Rice</span></div>
+        </div>
+        <div class="nova-card n2 fragment fade-left" data-num="2">
+          <h3><span class="blue">2</span> · Ingredients</h3>
+          <p>For cooking, not alone</p>
+          <div class="items"><span>🫒 Oil</span><span>🧈 Butter</span><span>🧂 Salt</span><span>🍯 Honey</span></div>
+        </div>
+        <div class="nova-card n3 fragment fade-right" data-num="3">
+          <h3><span class="yellow">3</span> · Processed</h3>
+          <p>Real food + some extras</p>
+          <div class="items"><span>🧀 Cheese</span><span>🍞 Bread</span><span>🥫 Canned</span><span>🥓 Ham</span></div>
+        </div>
+        <div class="nova-card n4 fragment fade-left" data-num="4">
+          <h3><span class="red">4</span> · Ultra-processed</h3>
+          <p>Factory food. Addictive.</p>
+          <div class="items"><span>🥤 Soda</span><span>🍟 Chips</span><span>🍬 Candy</span><span>🍕 Pizza</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-container fragment fade-up" style="min-width:300px;">
+      <p class="dim" style="font-size:0.65em; text-align:center; margin-bottom:8px;">Ideal plate ratio</p>
+      <canvas id="novaChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 7: NOVA 1 DEEP DIVE — Green world, glow            -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #010d06 0%, #0d2818 35%, #030a05 100%)" data-transition="slide">
+  <div class="nova-detail pulse-green" style="background:linear-gradient(145deg, #0d2818, #0a3d1f); border:2px solid var(--nova1);">
+    <div>
+      <div class="big-num green">1</div>
+      <p style="color:#4ade80; font-weight:700; font-size:0.85em; font-family:'Space Grotesk',sans-serif;">EAT MOST</p>
+    </div>
+    <div class="detail-right">
+      <h3>Unprocessed & Minimally Processed</h3>
+      <p><strong style="color:#fff;">Nothing added, nothing removed.</strong> Washed, cut, frozen, cooked — but no chemicals.</p>
+      <div class="food-chips">
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🍎 Fresh fruits</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🥬 Vegetables</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🥚 Eggs</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🍗 Meat & fish</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🥛 Milk</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🍚 Rice & pasta</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">🥜 Nuts & seeds</span>
+        <span class="food-chip" style="background:rgba(34,197,94,0.15); color:#86efac;">💧 Water & tea</span>
+      </div>
+      <p class="fragment" style="margin-top:14px; color:#4ade80; font-weight:700; font-size:1em;">→ Your plate should be mostly this.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 8: NOVA 4 DEEP DIVE — Red danger, pulse            -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #0a0303 0%, #1f0a0a 35%, #050202 100%)" data-transition="slide">
+  <div class="nova-detail pulse-red" style="background:linear-gradient(145deg, #1f0a0a, #3d0a0a); border:2px solid var(--nova4);">
+    <div>
+      <div class="big-num red">4</div>
+      <p style="color:#fca5a5; font-weight:700; font-size:0.85em; font-family:'Space Grotesk',sans-serif;">EAT RARELY</p>
+    </div>
+    <div class="detail-right">
+      <h3>Ultra-Processed Foods (UPF)</h3>
+      <p>Industrial products from <strong style="color:#fff;">chemicals, additives & flavors</strong> you'd never have in your kitchen. <span class="red">Designed to make you eat more.</span></p>
+      <div class="food-chips">
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🥤 Soda & energy drinks</span>
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🍟 Chips & crisps</span>
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🍬 Candy & chocolate</span>
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🍕 Frozen pizza</span>
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🌭 Hot dogs & nuggets</span>
+        <span class="food-chip" style="background:rgba(239,68,68,0.15); color:#fca5a5;">🥣 Sweet cereals</span>
+      </div>
+      <p class="fragment" style="margin-top:14px; color:#fca5a5; font-weight:700; font-size:1em;">→ Longer ingredients list = worse.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 9: GRANDMA TEST — Handwritten feel, elegant        -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(ellipse at 50% 40%, #1a1520 0%, #080808 65%)" data-transition="zoom" data-transition-speed="slow">
+  <p style="font-size:0.7em; color:#666; letter-spacing:3px; text-transform:uppercase; font-family:'Space Grotesk',sans-serif;">The Simple Test</p>
+  <div class="q-bubble" style="margin-top:15px; border-color:rgba(250,204,21,0.15);">
+    <p class="grandma-quote">
+      "Could your <span class="green">grandma</span><br>have made this?"
+    </p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:28px; display:flex !important; gap:40px; justify-content:center; align-items:center;">
+    <div style="text-align:center;">
+      <p style="font-size:2em;">👵🍅</p>
+      <p class="green" style="font-size:0.85em; font-weight:700;">Grandma's tomato sauce</p>
+      <p style="font-size:0.7em; color:#666;">= NOVA 1-3 ✅</p>
+    </div>
+    <div style="font-size:2em; color:#333;">vs</div>
+    <div style="text-align:center;">
+      <p style="font-size:2em;">🏭🧪</p>
+      <p class="red" style="font-size:0.85em; font-weight:700;">Pringles "pizza flavor"</p>
+      <p style="font-size:0.7em; color:#666;">= NOVA 4 ❌</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 10: GAME — Interactive quiz, glow on reveal         -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #06060f 0%, #0a0a1a 40%, #06060f 100%)" data-transition="slide">
+  <h2 style="margin-bottom:0;">Guess the <span class="green">NOVA Group!</span></h2>
+  <p class="dim" style="font-size:0.7em; margin-top:4px;">👆 Tap each item to reveal</p>
+  <div class="game-grid">
+    <div class="game-item" onclick="revealNova(this,1)"><span class="emoji">🍌</span>Banana</div>
+    <div class="game-item" onclick="revealNova(this,4)"><span class="emoji">🥤</span>Coca-Cola</div>
+    <div class="game-item" onclick="revealNova(this,3)"><span class="emoji">🧀</span>Cheese</div>
+    <div class="game-item" onclick="revealNova(this,4)"><span class="emoji">🍟</span>Chips</div>
+    <div class="game-item" onclick="revealNova(this,1)"><span class="emoji">🥚</span>Egg</div>
+    <div class="game-item" onclick="revealNova(this,4)"><span class="emoji">🍫</span>Nutella</div>
+    <div class="game-item" onclick="revealNova(this,3)"><span class="emoji">🍞</span>Bread</div>
+    <div class="game-item" onclick="revealNova(this,2)"><span class="emoji">🫒</span>Olive Oil</div>
+    <div class="game-item" onclick="revealNova(this,1)"><span class="emoji">🍚</span>Rice</div>
+    <div class="game-item" onclick="revealNova(this,4)"><span class="emoji">🌭</span>Hot Dog</div>
+    <div class="game-item" onclick="revealNova(this,1)"><span class="emoji">🥕</span>Carrot</div>
+    <div class="game-item" onclick="revealNova(this,4)"><span class="emoji">🥣</span>Frosties</div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 11: BOREDOM vs HUNGER — Purple moody                -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #08031a 0%, #1a0a2e 40%, #08031a 100%)" data-transition="convex">
+  <p style="font-size:5em;" class="animate__animated animate__fadeIn">🧠</p>
+  <div class="q-bubble" style="border-color:rgba(168,85,247,0.2);">
+    <h2 style="font-size:2.4em;">Do you eat because you're<br><span class="green">hungry</span> or <span style="color:#a855f7;">bored?</span></h2>
+    <p class="dim fragment fade-up" style="margin-top:16px; font-size:0.85em;">Real hunger = stomach growls. Boredom = you just want taste.</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 12: SNACK FREQUENCY — Red tones, stat               -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #0a0505 0%, #1a0808 40%, #0a0505 100%)" data-transition="slide">
+  <p style="font-size:5em;" class="animate__animated animate__shakeX">🍬🍫🍿</p>
+  <div class="q-bubble" style="border-color:rgba(239,68,68,0.15);">
+    <h2 style="font-size:2.4em;">How often do you eat<br><span class="red">sweets or snacks?</span></h2>
+    <p class="dim fragment" style="margin-top:14px; font-size:0.85em;">Every day? A few times a week? Only weekends?</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 13: SMART SWAPS — Animated rows                     -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(135deg, #030308 0%, #08081a 50%, #030308 100%)" data-transition="slide">
+  <h2>Smart Swaps: <span class="red">NOVA 4</span> → <span class="green">NOVA 1</span></h2>
+  <div class="swap-row fragment fade-right">
+    <div class="swap-bad">🍫 Chocolate bar<br><small class="red">NOVA 4</small></div>
+    <div class="swap-arrow">→</div>
+    <div class="swap-good">🌴 Dates, nuts, dried fruit<br><small class="green">NOVA 1</small></div>
+  </div>
+  <div class="swap-row fragment fade-left">
+    <div class="swap-bad">🍦 Fruit yogurt<br><small class="red">NOVA 4</small></div>
+    <div class="swap-arrow">→</div>
+    <div class="swap-good">🥛 Natural yogurt + fruit<br><small class="green">NOVA 1</small></div>
+  </div>
+  <div class="swap-row fragment fade-right">
+    <div class="swap-bad">🥤 Soda, iced tea<br><small class="red">NOVA 4</small></div>
+    <div class="swap-arrow">→</div>
+    <div class="swap-good">💧 Water + lemon or mint<br><small class="green">NOVA 1</small></div>
+  </div>
+  <div class="swap-row fragment fade-left">
+    <div class="swap-bad">🍬 Gummy bears<br><small class="red">NOVA 4</small></div>
+    <div class="swap-arrow">→</div>
+    <div class="swap-good">🍎 Apple slices, rice cakes<br><small class="green">NOVA 1</small></div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 14: SNACK IDEAS — Green garden, hover cards         -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #010d06 0%, #0d2818 40%, #010d06 100%)" data-transition="slide">
+  <h2>NOVA 1 Snack Ideas <span class="green">for School</span></h2>
+  <div class="snack-grid">
+    <div class="snack-card fragment fade-up"><div class="emoji">🥕</div><p>Veggie sticks<br>+ hummus</p></div>
+    <div class="snack-card fragment fade-up"><div class="emoji">🍞</div><p>Whole grain bread<br>cream cheese & cucumber</p></div>
+    <div class="snack-card fragment fade-up"><div class="emoji">🍎</div><p>Apple rings<br>+ nut butter</p></div>
+    <div class="snack-card fragment fade-up"><div class="emoji">🥛</div><p>Natural yogurt<br>+ banana</p></div>
+    <div class="snack-card fragment fade-up"><div class="emoji">⚡</div><p>Energy balls<br>(oats, dates, coconut)</p></div>
+    <div class="snack-card fragment fade-up"><div class="emoji">🫓</div><p>Tahini + honey<br>on bread</p></div>
+  </div>
+  <p class="fragment dim" style="margin-top:16px; font-size:0.8em;">All <span class="green">NOVA 1-2</span> — real food, real energy!</p>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 15: 3 PRODUCTS TO BAN — Red dramatic                -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(ellipse at 50% 50%, #1f0a0a 0%, #080303 65%)" data-transition="zoom">
+  <p style="font-size:5em;" class="animate__animated animate__headShake">🚫</p>
+  <div class="q-bubble" style="border-color:rgba(239,68,68,0.2);">
+    <h2 style="font-size:2.2em;">Which <span class="red">3 ultra-processed products</span><br>would you remove from your kitchen<br><span class="red">right now?</span></h2>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 16: HEALTHY FOODS YOU LIKE — Green glow             -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(ellipse at 50% 40%, #0a1f0a 0%, #030a03 65%)" data-transition="convex">
+  <p style="font-size:5em;" class="animate__animated animate__tada">😋</p>
+  <div class="q-bubble" style="border-color:rgba(34,197,94,0.2);">
+    <h2 style="font-size:2.4em;">Which <span class="green">healthy foods</span><br>do you actually <span class="green">enjoy?</span></h2>
+    <p class="dim fragment" style="margin-top:14px; font-size:0.85em;">NOVA 1 foods you already like eating!</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 17: ITALIAN FOOD — Tricolore, warm & proud          -->
+<!-- ========================================================= -->
+<section data-transition="slide">
+  <div style="position:absolute;top:0;left:0;width:33.3%;height:100%;background:linear-gradient(180deg,rgba(0,140,69,0.08),transparent);z-index:-1;"></div>
+  <div style="position:absolute;top:0;left:33.3%;width:33.3%;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.03),transparent);z-index:-1;"></div>
+  <div style="position:absolute;top:0;right:0;width:33.3%;height:100%;background:linear-gradient(180deg,rgba(206,43,55,0.08),transparent);z-index:-1;"></div>
+  <p style="font-size:5em;" class="animate__animated animate__bounceIn">🇮🇹</p>
+  <div class="q-bubble" style="border-color:rgba(34,197,94,0.15);">
+    <h2 style="font-size:2.4em;">What's a traditional dish<br>from <span class="green">your region?</span></h2>
+    <p class="fragment" style="color:#4ade80; margin-top:14px; font-size:0.9em;">Italian food is mostly NOVA 1-2. That's why it's so good!</p>
+    <p class="fragment dim" style="margin-top:8px; font-size:0.75em;">Pasta, olive oil, tomatoes, mozzarella, basil — all real food 🌿</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 18: READING LABELS — Two column, annotated          -->
+<!-- ========================================================= -->
+<section data-background="#060610" data-transition="slide">
+  <h2>How to spot <span class="red">NOVA 4</span> on the label</h2>
+  <div class="two-col">
+    <div class="label-card red-card fragment fade-right">
+      <h3 style="color:#fca5a5;">🚩 Red flags</h3>
+      <ul>
+        <li>More than <strong>5 ingredients</strong></li>
+        <li>Words you <strong>can't pronounce</strong></li>
+        <li>"Flavor", "color", "emulsifier"</li>
+        <li>Sugar in <strong>top 3</strong> ingredients</li>
+        <li>Multiple sugars (glucose, fructose, maltose...)</li>
+      </ul>
+    </div>
+    <div class="label-card green-card fragment fade-left">
+      <h3 style="color:#86efac;">✅ Green flags</h3>
+      <ul>
+        <li><strong>Short</strong> list (1-4 ingredients)</li>
+        <li>Ingredients you <strong>recognize</strong></li>
+        <li>Things your <strong>grandma</strong> would use</li>
+        <li>Sugar per 100g: <strong>under 5g</strong></li>
+        <li>No "E-numbers" or chemical names</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 19: DAILY HABIT — Reflective, soft purple           -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(160deg, #080510 0%, #12081f 40%, #080510 100%)" data-transition="convex">
+  <p style="font-size:5em;" class="animate__animated animate__rotateIn">🔄</p>
+  <div class="q-bubble" style="border-color:rgba(168,85,247,0.15);">
+    <h2 style="font-size:2.4em;">Which <span class="green">daily habit</span><br>could you change to eat<br>less <span class="red">NOVA 4?</span></h2>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 20: REWE MISSION — Green mission card               -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(145deg, #010d06 0%, #0d2818 35%, #030a05 100%)" data-transition="zoom">
+  <h2 style="margin-bottom:10px;">Your Mission at <span class="green">Rewe</span> 🛒</h2>
+  <div class="mission-card">
+    <h3 style="color:#4ade80; margin-top:0; font-size:1.3em;">The Challenge:</h3>
+    <ul>
+      <li>Buy ingredients for a <strong>healthy meal</strong> — mostly <span class="green">NOVA 1 & 2</span></li>
+      <li>Check <strong>3 labels</strong> — count ingredients. NOVA 1, 3 or 4?</li>
+      <li>Find <strong>1 product</strong> that looks healthy but is actually <span class="red">NOVA 4</span></li>
+      <li>Compare <strong>2 similar products</strong> — which has fewer ingredients?</li>
+      <li>Stay within <strong>budget</strong> — real food is often cheaper!</li>
+    </ul>
+  </div>
+  <p class="dim fragment" style="font-size:0.7em; margin-top:12px;">
+    💡 "Ja!" brand = cheap basics &nbsp;·&nbsp; Loose veggies > packaged &nbsp;·&nbsp; Check "Angebot" signs
+  </p>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 21: WHAT YOU CAN DO — 4 action cards                -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(135deg, #030308 0%, #08081a 50%, #030308 100%)" data-transition="slide">
+  <h2>What <span class="green">you</span> can do</h2>
+  <div class="card-grid">
+    <div class="action-card fragment fade-up">
+      <div class="icon">🏷️</div>
+      <h3>Flip & Read</h3>
+      <p>Always flip the package. Short list = good.</p>
+    </div>
+    <div class="action-card fragment fade-up">
+      <div class="icon">🍳</div>
+      <h3>Cook More</h3>
+      <p>When you cook, you control what's in it.</p>
+    </div>
+    <div class="action-card fragment fade-up">
+      <div class="icon">🔄</div>
+      <h3>Swap Weekly</h3>
+      <p>Replace 1 NOVA 4 product per week.</p>
+    </div>
+    <div class="action-card fragment fade-up">
+      <div class="icon">🇮🇹</div>
+      <h3>Cook Italian!</h3>
+      <p>Fresh ingredients, simple recipes. Already smart.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 22: 7-DAY CHALLENGE — Epic, glowing                 -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(145deg, #030310 0%, #0a1a20 30%, #0d2818 65%, #030310 100%)" data-transition="zoom" data-transition-speed="slow">
+  <div class="challenge-box">
+    <h2 style="margin-bottom:14px; font-size:2.2em;">🏆 <span class="green">7 Days NOVA 1-3 Only!</span></h2>
+    <p class="dim" style="font-size:0.9em; max-width:550px; margin:0 auto;">
+      Try to avoid <span class="red">ultra-processed food</span> for one week.
+    </p>
+    <ul>
+      <li>No soda, candy, chips, instant noodles</li>
+      <li>Cook with real ingredients</li>
+      <li>Every evening: "What was easy? What was hard?"</li>
+    </ul>
+    <p class="fragment" style="margin-top:18px; color:#facc15; font-size:0.95em; font-family:'Caveat',cursive; font-weight:700;">
+      You don't have to be perfect — just notice the difference!
+    </p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 23: QUESTIONS — Clean, calm                         -->
+<!-- ========================================================= -->
+<section data-background="radial-gradient(ellipse at 50% 40%, #1a1520 0%, #080808 65%)" data-transition="convex">
+  <p style="font-size:5em;" class="animate__animated animate__heartBeat animate__slower">✋</p>
+  <h2 style="font-size:3.2em;">Questions<br>before we <span class="green">shop?</span></h2>
+</section>
+
+<!-- ========================================================= -->
+<!-- SLIDE 24: LET'S GO! — Confetti, energy                    -->
+<!-- ========================================================= -->
+<section data-background="linear-gradient(135deg, #0a2818 0%, #1a3a2a 30%, #0d2818 65%, #050a05 100%)" data-transition="zoom" data-transition-speed="slow" id="finalSlide">
+  <p style="font-size:7em;" class="animate__animated animate__bounceIn">🛒</p>
+  <h1 style="font-size:4.5em;">Let's go to <span class="green">Rewe!</span></h1>
+  <p class="dim" style="font-size:1em; margin-top:16px;">Flip the package. Count the ingredients. Choose NOVA 1.</p>
+  <div style="margin-top:35px;">
+    <span class="tag tag-green">NOVA 1 = Real food</span>
+    <span class="tag tag-red">NOVA 4 = Factory food</span>
+    <span class="tag tag-yellow">You decide!</span>
+  </div>
+</section>
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"></script>
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+<script src="https://unpkg.com/rough-notation/lib/rough-notation.iife.js"></script>
+
+<script>
+  // ===== REVEAL.JS =====
+  const deck = Reveal.initialize({
+    hash: true,
+    transition: 'slide',
+    transitionSpeed: 'default',
+    backgroundTransition: 'fade',
+    controls: true,
+    controlsLayout: 'bottom-right',
+    progress: true,
+    center: true,
+    width: 1920,
+    height: 1080,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    touch: true,
+  });
+
+  // ===== TYPED.JS — Title subtitle =====
+  deck.then(() => {
+    new Typed('#typed-subtitle', {
+      strings: [
+        'Learn the NOVA system.',
+        'See what\'s really in your food.',
+        'Then go buy & cook!',
+      ],
+      typeSpeed: 40,
+      backSpeed: 25,
+      backDelay: 1800,
+      loop: true,
+      showCursor: true,
+    });
+  });
+
+  // ===== CHART.JS — NOVA pie chart =====
+  Reveal.on('slidechanged', (event) => {
+    // Init chart when NOVA overview slide is shown
+    if (event.indexh === 5 && !window.chartInit) {
+      window.chartInit = true;
+      setTimeout(() => {
+        const ctx = document.getElementById('novaChart');
+        if (ctx) {
+          new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['NOVA 1 — Unprocessed', 'NOVA 2 — Ingredients', 'NOVA 3 — Processed', 'NOVA 4 — Ultra-processed'],
+              datasets: [{
+                data: [50, 15, 20, 15],
+                backgroundColor: ['#22c55e', '#60a5fa', '#facc15', '#ef4444'],
+                borderColor: '#0a0a14',
+                borderWidth: 4,
+                hoverOffset: 12,
+              }]
+            },
+            options: {
+              responsive: true,
+              cutout: '55%',
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: { color: '#888', font: { size: 11, family: 'Space Grotesk' }, padding: 12, usePointStyle: true, pointStyleWidth: 10 }
+                },
+              },
+              animation: { animateRotate: true, duration: 1500 },
+            }
+          });
+        }
+      }, 400);
+    }
+
+    // Confetti on final slide
+    if (event.indexh === 23) {
+      setTimeout(() => {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#22c55e', '#4ade80', '#facc15', '#60a5fa'] });
+        setTimeout(() => confetti({ particleCount: 50, spread: 90, origin: { y: 0.5 }, colors: ['#22c55e', '#86efac', '#fde047'] }), 600);
+      }, 500);
+    }
+  });
+
+  // ===== FLOATING PARTICLES — Title slide =====
+  (function() {
+    const container = document.getElementById('titleParticles');
+    if (!container) return;
+    const colors = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 4 + Math.random() * 12;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDuration = (8 + Math.random() * 15) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      container.appendChild(p);
+    }
+  })();
+
+  // ===== NOVA GAME =====
+  function revealNova(el, group) {
+    if (el.dataset.revealed) return;
+    el.dataset.revealed = 'true';
+    el.classList.add('revealed-' + group);
+    const label = document.createElement('div');
+    label.style.cssText = 'margin-top:8px; font-weight:700; font-size:0.8em;';
+    const colors = { 1: '#4ade80', 2: '#93c5fd', 3: '#fde047', 4: '#fca5a5' };
+    const names = { 1: 'NOVA 1 ✅', 2: 'NOVA 2 🔵', 3: 'NOVA 3 🟡', 4: 'NOVA 4 🔴' };
+    label.style.color = colors[group];
+    label.textContent = names[group];
+    el.appendChild(label);
+    el.style.cursor = 'default';
+
+    // Mini confetti for correct guess attempt
+    if (typeof confetti !== 'undefined') {
+      const rect = el.getBoundingClientRect();
+      confetti({
+        particleCount: 15,
+        spread: 40,
+        startVelocity: 15,
+        origin: { x: (rect.left + rect.width/2) / window.innerWidth, y: (rect.top + rect.height/2) / window.innerHeight },
+        colors: [colors[group]],
+        ticks: 50,
+        gravity: 1.5,
+      });
+    }
+  }
+</script>
+
+</body>
+</html>

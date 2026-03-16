@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA Food Scanner — The Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #080810;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  :root {
+    --nova1: #22c55e; --nova1-bg: #0d2818;
+    --nova2: #60a5fa; --nova2-bg: #172554;
+    --nova3: #facc15; --nova3-bg: #451a03;
+    --nova4: #ef4444; --nova4-bg: #450a0a;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ===== START SCREEN ===== */
+  #start {
+    justify-content: center; text-align: center;
+    background: linear-gradient(135deg, #020208, #0a0520, #0d2818, #0a0520, #020208);
+  }
+  #start h1 { font-size: 3em; font-weight: 900; margin-bottom: 10px; }
+  #start .subtitle { color: #888; font-size: 1.1em; max-width: 500px; margin: 0 auto 30px; }
+  .mode-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+  .mode-card {
+    background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 30px 24px; width: 220px; text-align: center;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .mode-card:hover { transform: translateY(-8px); border-color: var(--nova1); box-shadow: 0 20px 40px rgba(34,197,94,0.15); }
+  .mode-card .icon { font-size: 2.5em; margin-bottom: 10px; }
+  .mode-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; margin-bottom: 6px; }
+  .mode-card p { font-size: 0.8em; color: #888; }
+
+  /* ===== GAME SCREEN ===== */
+  #game { padding-top: 30px; }
+  .game-header {
+    width: 100%; max-width: 700px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding: 0 10px;
+  }
+  .score-display { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; }
+  .score-display span { font-weight: 700; color: var(--nova1); font-size: 1.4em; }
+  .round-display { color: #888; font-size: 0.9em; }
+  .streak-display { font-size: 0.85em; color: var(--nova3); }
+
+  .progress-bar-container {
+    width: 100%; max-width: 700px; height: 6px; background: rgba(255,255,255,0.08);
+    border-radius: 3px; margin-bottom: 24px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--nova1), var(--nova2));
+    border-radius: 3px; transition: width 0.5s ease;
+  }
+
+  /* Food card */
+  .food-card {
+    background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 28px; padding: 40px; text-align: center; max-width: 500px; width: 100%;
+    transition: all 0.3s; margin-bottom: 24px;
+  }
+  .food-card .food-emoji { font-size: 5em; margin-bottom: 10px; }
+  .food-card .food-name { font-size: 1.8em; font-weight: 700; margin-bottom: 6px; }
+  .food-card .food-hint { color: #666; font-size: 0.85em; font-style: italic; }
+
+  /* NOVA buttons */
+  .nova-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; width: 100%; }
+  .nova-btn {
+    border: none; border-radius: 18px; padding: 20px; font-size: 1em; font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1); color: #fff; position: relative; overflow: hidden;
+  }
+  .nova-btn:hover { transform: scale(1.05); }
+  .nova-btn:active { transform: scale(0.97); }
+  .nova-btn-1 { background: linear-gradient(135deg, #0d2818, #166534); border: 2px solid var(--nova1); }
+  .nova-btn-1:hover { box-shadow: 0 0 30px rgba(34,197,94,0.3); }
+  .nova-btn-2 { background: linear-gradient(135deg, #0c1a3a, #1e3a5f); border: 2px solid var(--nova2); }
+  .nova-btn-2:hover { box-shadow: 0 0 30px rgba(96,165,250,0.3); }
+  .nova-btn-3 { background: linear-gradient(135deg, #2d1a00, #713f12); border: 2px solid var(--nova3); }
+  .nova-btn-3:hover { box-shadow: 0 0 30px rgba(250,204,21,0.3); }
+  .nova-btn-4 { background: linear-gradient(135deg, #2a0a0a, #7f1d1d); border: 2px solid var(--nova4); }
+  .nova-btn-4:hover { box-shadow: 0 0 30px rgba(239,68,68,0.3); }
+  .nova-btn .btn-num { font-size: 1.6em; display: block; }
+  .nova-btn .btn-label { font-size: 0.75em; color: rgba(255,255,255,0.7); }
+  .nova-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 16px; padding: 16px 28px; border-radius: 16px; font-weight: 600;
+    font-size: 1em; max-width: 500px; width: 100%; text-align: center;
+    animation: feedbackIn 0.3s ease;
+  }
+  @keyframes feedbackIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .feedback.correct { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+  .feedback.wrong { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+  .feedback .explanation { font-weight: 400; font-size: 0.85em; color: #aaa; margin-top: 6px; }
+
+  .next-btn {
+    margin-top: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #fff; padding: 14px 40px; border-radius: 14px; font-size: 1em; font-weight: 600;
+    cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif;
+  }
+  .next-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.03); }
+
+  /* Timer bar */
+  .timer-bar {
+    width: 100%; max-width: 500px; height: 5px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; margin-top: 8px; overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%; background: var(--nova1); border-radius: 3px;
+    transition: width 0.1s linear;
+  }
+  .timer-fill.warning { background: var(--nova3); }
+  .timer-fill.danger { background: var(--nova4); }
+
+  /* ===== SCANNER MODE ===== */
+  .scanner-input {
+    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 18px 24px; font-size: 1.1em; color: #fff;
+    font-family: 'Inter', sans-serif; width: 100%; max-width: 500px; text-align: center;
+    outline: none; transition: border-color 0.3s;
+  }
+  .scanner-input:focus { border-color: var(--nova1); }
+  .scanner-input::placeholder { color: #555; }
+  .scan-btn {
+    margin-top: 12px; background: linear-gradient(135deg, #0d2818, #166534);
+    border: 2px solid var(--nova1); color: #fff; padding: 16px 40px; border-radius: 16px;
+    font-size: 1.1em; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.3s;
+  }
+  .scan-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+  .scan-result {
+    margin-top: 20px; max-width: 500px; width: 100%;
+    border-radius: 20px; padding: 30px; text-align: center;
+    animation: feedbackIn 0.4s ease;
+  }
+  .scan-result h3 { font-size: 1.4em; margin-bottom: 8px; }
+  .scan-result p { font-size: 0.9em; color: #aaa; }
+  .scan-result .nova-badge {
+    display: inline-block; padding: 8px 20px; border-radius: 12px;
+    font-weight: 700; font-size: 1.2em; margin-top: 10px;
+  }
+
+  /* ===== RESULTS SCREEN ===== */
+  #results { justify-content: center; text-align: center; background: linear-gradient(135deg, #020208, #0d2818, #020208); }
+  #results h1 { font-size: 3em; margin-bottom: 10px; }
+  .result-stats { display: flex; gap: 30px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+  .result-stat { text-align: center; }
+  .result-stat .number { font-size: 3em; font-weight: 900; display: block; }
+  .result-stat .label { font-size: 0.8em; color: #888; }
+  .result-grade {
+    font-size: 1.5em; font-weight: 700; padding: 12px 30px; border-radius: 16px;
+    margin: 20px 0; display: inline-block;
+  }
+  .grade-s { background: rgba(34,197,94,0.15); color: #4ade80; border: 2px solid rgba(34,197,94,0.3); }
+  .grade-a { background: rgba(96,165,250,0.15); color: #93c5fd; border: 2px solid rgba(96,165,250,0.3); }
+  .grade-b { background: rgba(250,204,21,0.15); color: #fde047; border: 2px solid rgba(250,204,21,0.3); }
+  .grade-c { background: rgba(239,68,68,0.15); color: #fca5a5; border: 2px solid rgba(239,68,68,0.3); }
+  .play-again-btn {
+    margin-top: 20px; background: linear-gradient(135deg, #0d2818, #166534);
+    border: 2px solid var(--nova1); color: #fff; padding: 16px 40px; border-radius: 16px;
+    font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .play-again-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+
+  /* Team scoreboard */
+  .team-scores { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+  .team-card {
+    background: rgba(255,255,255,0.04); border-radius: 16px; padding: 20px 28px;
+    min-width: 120px; text-align: center; border: 2px solid rgba(255,255,255,0.08);
+  }
+  .team-card.winning { border-color: var(--nova1); box-shadow: 0 0 30px rgba(34,197,94,0.15); }
+  .team-card .team-name { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
+  .team-card .team-score { font-size: 2em; font-weight: 900; color: var(--nova1); }
+
+  /* Team setup */
+  .team-setup { max-width: 400px; width: 100%; margin-top: 20px; }
+  .team-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .team-input {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 12px 16px; color: #fff; font-family: 'Inter', sans-serif;
+    font-size: 1em; outline: none;
+  }
+  .team-input:focus { border-color: var(--nova1); }
+  .add-team-btn {
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #4ade80;
+    border-radius: 12px; padding: 12px 20px; cursor: pointer; font-weight: 700; font-size: 1.2em;
+    transition: all 0.3s;
+  }
+  .add-team-btn:hover { background: rgba(34,197,94,0.25); }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    #start h1 { font-size: 2em; }
+    .mode-cards { flex-direction: column; align-items: center; }
+    .mode-card { width: 100%; max-width: 300px; }
+    .food-card .food-emoji { font-size: 3.5em; }
+    .food-card .food-name { font-size: 1.3em; }
+    .nova-buttons { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .nova-btn { padding: 14px; }
+    .result-stats { gap: 15px; }
+    .result-stat .number { font-size: 2em; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== START SCREEN ===== -->
+<div class="screen active" id="start">
+  <p style="font-size:4em; margin-bottom:10px;">🔬</p>
+  <h1>NOVA <span style="color:#22c55e;">Food Scanner</span></h1>
+  <p class="subtitle">How well can you classify food? Test your knowledge of the NOVA system!</p>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startGame('solo')">
+      <div class="icon">🎯</div>
+      <h3>Solo Challenge</h3>
+      <p>20 foods, beat the timer<br>How many can you get right?</p>
+    </div>
+    <div class="mode-card" onclick="startGame('teams')">
+      <div class="icon">👥</div>
+      <h3>Team Battle</h3>
+      <p>Teams take turns<br>Most points wins!</p>
+    </div>
+    <div class="mode-card" onclick="startGame('scanner')">
+      <div class="icon">📱</div>
+      <h3>Food Scanner</h3>
+      <p>Type any food<br>and find its NOVA group</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TEAM SETUP SCREEN ===== -->
+<div class="screen" id="teamSetup">
+  <p style="font-size:3em; margin-top:40px;">👥</p>
+  <h2 style="font-size:2em; margin:10px 0;">Team Setup</h2>
+  <p style="color:#888; margin-bottom:20px;">Add 2-4 teams, then start!</p>
+  <div class="team-setup">
+    <div class="team-input-row">
+      <input class="team-input" id="teamNameInput" placeholder="Team name..." maxlength="15" onkeydown="if(event.key==='Enter')addTeam()">
+      <button class="add-team-btn" onclick="addTeam()">+</button>
+    </div>
+    <div id="teamList" style="margin-top:10px;"></div>
+  </div>
+  <div class="team-scores" id="setupTeamPreview"></div>
+  <button class="play-again-btn" id="startTeamGame" onclick="startTeamGame()" style="margin-top:20px; display:none;">
+    Start Game →
+  </button>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen" id="game">
+  <div class="game-header">
+    <div class="score-display">Score: <span id="scoreNum">0</span></div>
+    <div class="round-display" id="roundDisplay">1 / 20</div>
+    <div class="streak-display" id="streakDisplay"></div>
+  </div>
+  <!-- Team indicator -->
+  <div id="teamIndicator" style="display:none; margin-bottom:12px;">
+    <div class="team-scores" id="gameTeamScores"></div>
+    <p id="currentTeamLabel" style="color:#4ade80; font-weight:700; font-size:1.1em; margin-top:10px;"></p>
+  </div>
+  <div class="progress-bar-container">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="food-card" id="foodCard">
+    <div class="food-emoji" id="foodEmoji">🍌</div>
+    <div class="food-name" id="foodName">Banana</div>
+    <div class="food-hint" id="foodHint"></div>
+  </div>
+  <div class="timer-bar" id="timerBarContainer" style="display:none;">
+    <div class="timer-fill" id="timerFill" style="width:100%"></div>
+  </div>
+  <div class="nova-buttons" id="novaButtons">
+    <button class="nova-btn nova-btn-1" onclick="guess(1)"><span class="btn-num">1</span><span class="btn-label">Unprocessed</span></button>
+    <button class="nova-btn nova-btn-2" onclick="guess(2)"><span class="btn-num">2</span><span class="btn-label">Ingredient</span></button>
+    <button class="nova-btn nova-btn-3" onclick="guess(3)"><span class="btn-num">3</span><span class="btn-label">Processed</span></button>
+    <button class="nova-btn nova-btn-4" onclick="guess(4)"><span class="btn-num">4</span><span class="btn-label">Ultra-processed</span></button>
+  </div>
+  <div id="feedbackArea"></div>
+  <button class="next-btn" id="nextBtn" style="display:none;" onclick="nextRound()">Next →</button>
+</div>
+
+<!-- ===== SCANNER SCREEN ===== -->
+<div class="screen" id="scanner">
+  <p style="font-size:4em; margin-top:60px;">📱</p>
+  <h2 style="font-size:2em; margin:10px 0;">Food Scanner</h2>
+  <p style="color:#888; margin-bottom:24px;">Type any food and we'll classify it!</p>
+  <input class="scanner-input" id="scannerInput" placeholder="Type a food... (e.g. Pizza)" onkeydown="if(event.key==='Enter')scanFood()">
+  <button class="scan-btn" onclick="scanFood()">🔍 Scan</button>
+  <div id="scanResult"></div>
+  <button class="next-btn" style="margin-top:30px;" onclick="showScreen('start')">← Back</button>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div class="screen" id="results">
+  <p style="font-size:4em;">🏆</p>
+  <h1 id="resultsTitle">Game Over!</h1>
+  <div id="resultsContent"></div>
+  <button class="play-again-btn" onclick="showScreen('start')">🔄 Play Again</button>
+  <button class="next-btn" style="margin-top:10px;" onclick="showScreen('start')">← Menu</button>
+</div>
+
+<script>
+// ===== FOOD DATABASE =====
+const foods = [
+  { emoji: '🍌', name: 'Banana', nova: 1, hint: 'Straight from the tree', why: 'A fresh fruit with nothing added.' },
+  { emoji: '🥕', name: 'Carrot', nova: 1, hint: 'Grows underground', why: 'A raw vegetable — as natural as it gets.' },
+  { emoji: '🥚', name: 'Egg', nova: 1, hint: 'From the chicken', why: 'Minimally processed natural food.' },
+  { emoji: '🍚', name: 'Rice', nova: 1, hint: 'A grain staple', why: 'Dried and packaged but nothing added.' },
+  { emoji: '🍗', name: 'Chicken breast', nova: 1, hint: 'Plain protein', why: 'Fresh meat, unprocessed.' },
+  { emoji: '🥛', name: 'Milk', nova: 1, hint: 'From the cow', why: 'Pasteurized but nothing else added.' },
+  { emoji: '🍎', name: 'Apple', nova: 1, hint: 'Pick it from a tree', why: 'Fresh fruit, no processing.' },
+  { emoji: '🥜', name: 'Peanuts (plain)', nova: 1, hint: 'Roasted, no coating', why: 'Minimally processed — just roasted.' },
+  { emoji: '🥔', name: 'Potato', nova: 1, hint: 'Dig it up', why: 'A natural root vegetable.' },
+  { emoji: '🍋', name: 'Lemon', nova: 1, hint: 'Sour power', why: 'Fresh citrus fruit.' },
+  { emoji: '🫘', name: 'Lentils', nova: 1, hint: 'Dried legumes', why: 'Dried but nothing added — pure legume.' },
+  { emoji: '💧', name: 'Water', nova: 1, hint: 'The original drink', why: 'Zero processing, zero ingredients.' },
+  { emoji: '🫒', name: 'Olive Oil', nova: 2, hint: 'Pressed from olives', why: 'Extracted from a natural food — a cooking ingredient.' },
+  { emoji: '🧈', name: 'Butter', nova: 2, hint: 'Churned from cream', why: 'Made from cream + salt — a processed ingredient.' },
+  { emoji: '🧂', name: 'Salt', nova: 2, hint: 'Mined or evaporated', why: 'A pure cooking ingredient.' },
+  { emoji: '🍯', name: 'Honey', nova: 2, hint: 'Made by bees', why: 'Natural sweetener, used as an ingredient.' },
+  { emoji: '🌾', name: 'Flour', nova: 2, hint: 'Ground from wheat', why: 'Processed from grain — a baking ingredient.' },
+  { emoji: '🍋', name: 'Vinegar', nova: 2, hint: 'Fermented liquid', why: 'Used as a cooking ingredient, not eaten alone.' },
+  { emoji: '🧀', name: 'Cheese', nova: 3, hint: 'Milk + cultures + time', why: 'Real food (milk) + added ingredients (rennet, salt).' },
+  { emoji: '🍞', name: 'Bread', nova: 3, hint: 'Baked from flour', why: 'Made from flour, water, yeast, salt — simple processing.' },
+  { emoji: '🥫', name: 'Canned tomatoes', nova: 3, hint: 'Tomatoes in a can', why: 'Real food preserved with minimal additions.' },
+  { emoji: '🥓', name: 'Ham', nova: 3, hint: 'Cured meat', why: 'Meat + salt + curing — traditional processing.' },
+  { emoji: '🫙', name: 'Pickles', nova: 3, hint: 'Cucumbers in brine', why: 'Vegetables preserved in vinegar and salt.' },
+  { emoji: '🍷', name: 'Wine', nova: 3, hint: 'Fermented grapes', why: 'Processed from fruit through fermentation.' },
+  { emoji: '🥤', name: 'Coca-Cola', nova: 4, hint: 'The famous brown drink', why: 'High-fructose corn syrup, caramel color, phosphoric acid — pure factory.' },
+  { emoji: '🍟', name: 'Pringles', nova: 4, hint: 'Not really a potato chip', why: 'Dehydrated potato, wheat starch, emulsifiers, flavoring — industrial product.' },
+  { emoji: '🍬', name: 'Gummy bears', nova: 4, hint: 'Jiggly colorful sweets', why: 'Glucose syrup, sugar, gelatin, citric acid, colors, flavors.' },
+  { emoji: '🍫', name: 'Nutella', nova: 4, hint: 'Chocolate hazelnut spread', why: 'First ingredient is sugar, then palm oil — ultra-processed.' },
+  { emoji: '🍕', name: 'Frozen Pizza', nova: 4, hint: 'From the freezer aisle', why: 'Emulsifiers, stabilizers, flavoring, modified starches — NOVA 4.' },
+  { emoji: '🌭', name: 'Hot Dog', nova: 4, hint: 'Mystery meat tube', why: 'Mechanically separated meat, sodium nitrite, phosphates — factory food.' },
+  { emoji: '🥣', name: 'Frosties / Froot Loops', nova: 4, hint: 'Colorful breakfast', why: 'Sugar, corn flour, BHT preservative, artificial colors.' },
+  { emoji: '🍦', name: 'Fruit Yogurt', nova: 4, hint: 'Looks healthy...', why: 'Added sugar, modified starch, artificial flavors — not just yogurt + fruit.' },
+  { emoji: '🥤', name: 'Energy Drink', nova: 4, hint: 'Wings or not', why: 'Taurine, caffeine, sugar, artificial sweeteners, colors.' },
+  { emoji: '🧃', name: 'Capri-Sun', nova: 4, hint: 'Silver pouch drink', why: 'Water, sugar, citric acid, natural flavoring — ultra-processed.' },
+  { emoji: '🍩', name: 'Donut', nova: 4, hint: 'Ring-shaped sweet', why: 'Refined flour, sugar, hydrogenated fat, emulsifiers, artificial flavors.' },
+  { emoji: '🥫', name: 'Instant Noodles', nova: 4, hint: 'Just add water', why: 'Fried noodles, MSG, palm oil, sodium, flavor enhancers.' },
+  { emoji: '🍪', name: 'Oreos', nova: 4, hint: 'Twist, lick, dunk', why: 'Sugar, palm oil, high-fructose corn syrup, soy lecithin, artificial flavor.' },
+  { emoji: '🧁', name: 'Packaged Muffin', nova: 4, hint: 'From the convenience store', why: 'Emulsifiers, preservatives, modified starch, artificial flavors.' },
+  { emoji: '🥜', name: 'Honey-roasted Peanuts', nova: 4, hint: 'Sweet & crunchy coating', why: 'Sugar, cornstarch, honey powder, salt — coating makes it NOVA 4.' },
+  { emoji: '🧴', name: 'Ketchup', nova: 4, hint: 'Red squeeze bottle', why: 'Tomato concentrate, high-fructose corn syrup, corn syrup, vinegar — heavily processed.' },
+];
+
+// ===== SCANNER DATABASE =====
+const scanDB = {};
+foods.forEach(f => { scanDB[f.name.toLowerCase()] = f; });
+// Add aliases
+const aliases = {
+  'banana': 'banana', 'apple': 'apple', 'water': 'water', 'coke': 'coca-cola', 'cola': 'coca-cola',
+  'chips': 'pringles', 'candy': 'gummy bears', 'pizza': 'frozen pizza', 'ice cream': 'fruit yogurt',
+  'cereal': 'frosties / froot loops', 'noodles': 'instant noodles', 'ramen': 'instant noodles',
+  'soda': 'coca-cola', 'fanta': 'coca-cola', 'sprite': 'coca-cola', 'pepsi': 'coca-cola',
+  'chocolate': 'nutella', 'cookies': 'oreos', 'biscuits': 'oreos',
+  'orange': 'apple', 'tomato': 'carrot', 'cucumber': 'carrot', 'onion': 'carrot',
+  'fish': 'chicken breast', 'salmon': 'chicken breast', 'tuna': 'chicken breast',
+  'pasta': 'rice', 'spaghetti': 'rice', 'oats': 'rice', 'beans': 'lentils',
+  'sugar': 'salt', 'oil': 'olive oil', 'cream': 'butter',
+  'yogurt': 'milk', 'mozzarella': 'cheese', 'parmesan': 'cheese',
+  'toast': 'bread', 'baguette': 'bread', 'croissant': 'bread',
+  'juice': 'capri-sun', 'lemonade': 'coca-cola',
+  'hamburger': 'hot dog', 'burger': 'hot dog', 'nuggets': 'hot dog', 'sausage': 'hot dog',
+  'muffin': 'packaged muffin', 'cake': 'packaged muffin', 'donut': 'donut', 'doughnut': 'donut',
+  'popcorn': 'pringles', 'doritos': 'pringles', 'nachos': 'pringles',
+  'red bull': 'energy drink', 'monster': 'energy drink',
+  'egg': 'egg', 'eggs': 'egg', 'potato': 'potato', 'potatoes': 'potato',
+  'lemon': 'lemon', 'lime': 'lemon', 'honey': 'honey',
+  'wine': 'wine', 'beer': 'wine',
+  'ham': 'ham', 'bacon': 'ham', 'salami': 'ham',
+  'pickles': 'pickles', 'olives': 'pickles',
+  'flour': 'flour', 'vinegar': 'vinegar',
+  'peanuts': 'peanuts (plain)', 'nuts': 'peanuts (plain)', 'almonds': 'peanuts (plain)',
+  'milk': 'milk', 'rice': 'rice', 'bread': 'bread', 'cheese': 'cheese',
+  'chicken': 'chicken breast', 'meat': 'chicken breast', 'steak': 'chicken breast',
+  'carrot': 'carrot', 'carrots': 'carrot', 'broccoli': 'carrot', 'spinach': 'carrot',
+  'ketchup': 'ketchup', 'mayonnaise': 'ketchup', 'mayo': 'ketchup',
+};
+
+// ===== GAME STATE =====
+let state = {
+  mode: 'solo',
+  foods: [],
+  current: 0,
+  score: 0,
+  streak: 0,
+  maxStreak: 0,
+  answered: false,
+  teams: [],
+  currentTeam: 0,
+  timerInterval: null,
+  timerLeft: 100,
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== START GAME =====
+function startGame(mode) {
+  state.mode = mode;
+  state.score = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.current = 0;
+  state.answered = false;
+
+  if (mode === 'scanner') {
+    showScreen('scanner');
+    document.getElementById('scanResult').innerHTML = '';
+    document.getElementById('scannerInput').value = '';
+    setTimeout(() => document.getElementById('scannerInput').focus(), 300);
+    return;
+  }
+
+  if (mode === 'teams') {
+    state.teams = [];
+    state.currentTeam = 0;
+    document.getElementById('teamList').innerHTML = '';
+    document.getElementById('setupTeamPreview').innerHTML = '';
+    document.getElementById('startTeamGame').style.display = 'none';
+    showScreen('teamSetup');
+    setTimeout(() => document.getElementById('teamNameInput').focus(), 300);
+    return;
+  }
+
+  // Solo
+  state.foods = shuffle([...foods]).slice(0, 20);
+  showScreen('game');
+  document.getElementById('teamIndicator').style.display = 'none';
+  document.getElementById('timerBarContainer').style.display = 'block';
+  showFood();
+}
+
+// ===== TEAM SETUP =====
+function addTeam() {
+  const input = document.getElementById('teamNameInput');
+  const name = input.value.trim();
+  if (!name || state.teams.length >= 4) return;
+  state.teams.push({ name, score: 0 });
+  input.value = '';
+  input.focus();
+  renderTeamPreview();
+  if (state.teams.length >= 2) document.getElementById('startTeamGame').style.display = 'block';
+}
+
+function renderTeamPreview() {
+  const colors = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
+  document.getElementById('setupTeamPreview').innerHTML = state.teams.map((t, i) =>
+    `<div class="team-card"><div class="team-name" style="color:${colors[i]}">${t.name}</div><div class="team-score">0</div></div>`
+  ).join('');
+}
+
+function startTeamGame() {
+  if (state.teams.length < 2) return;
+  state.foods = shuffle([...foods]).slice(0, state.teams.length * 5);
+  state.current = 0;
+  state.currentTeam = 0;
+  showScreen('game');
+  document.getElementById('teamIndicator').style.display = 'block';
+  document.getElementById('timerBarContainer').style.display = 'block';
+  updateTeamScores();
+  showFood();
+}
+
+function updateTeamScores() {
+  const colors = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
+  const maxScore = Math.max(...state.teams.map(t => t.score), 1);
+  document.getElementById('gameTeamScores').innerHTML = state.teams.map((t, i) =>
+    `<div class="team-card ${t.score === maxScore && t.score > 0 ? 'winning' : ''}">
+      <div class="team-name" style="color:${colors[i]}">${t.name}</div>
+      <div class="team-score">${t.score}</div>
+    </div>`
+  ).join('');
+  if (state.teams.length > 0) {
+    const colors2 = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
+    document.getElementById('currentTeamLabel').innerHTML =
+      `${state.teams[state.currentTeam].name}'s turn!`;
+    document.getElementById('currentTeamLabel').style.color = colors2[state.currentTeam];
+  }
+}
+
+// ===== SHOW FOOD =====
+function showFood() {
+  if (state.current >= state.foods.length) return endGame();
+  const food = state.foods[state.current];
+  state.answered = false;
+
+  document.getElementById('foodEmoji').textContent = food.emoji;
+  document.getElementById('foodName').textContent = food.name;
+  document.getElementById('foodHint').textContent = food.hint;
+  document.getElementById('feedbackArea').innerHTML = '';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('roundDisplay').textContent = `${state.current + 1} / ${state.foods.length}`;
+  document.getElementById('scoreNum').textContent = state.mode === 'teams' ? '' : state.score;
+  document.getElementById('progressFill').style.width = `${(state.current / state.foods.length) * 100}%`;
+
+  // Enable buttons
+  document.querySelectorAll('.nova-btn').forEach(b => { b.classList.remove('disabled'); b.style.opacity = '1'; });
+
+  // Reset card style
+  const card = document.getElementById('foodCard');
+  card.style.borderColor = 'rgba(255,255,255,0.08)';
+  card.style.background = 'rgba(255,255,255,0.03)';
+
+  // Start timer
+  startTimer();
+
+  // Update streak
+  updateStreak();
+}
+
+// ===== TIMER =====
+function startTimer() {
+  clearInterval(state.timerInterval);
+  state.timerLeft = 100;
+  const fill = document.getElementById('timerFill');
+  fill.style.width = '100%';
+  fill.className = 'timer-fill';
+
+  state.timerInterval = setInterval(() => {
+    if (state.answered) { clearInterval(state.timerInterval); return; }
+    state.timerLeft -= 1;
+    fill.style.width = state.timerLeft + '%';
+    if (state.timerLeft <= 30) fill.className = 'timer-fill danger';
+    else if (state.timerLeft <= 60) fill.className = 'timer-fill warning';
+    if (state.timerLeft <= 0) {
+      clearInterval(state.timerInterval);
+      guess(-1); // Time's up
+    }
+  }, 100); // 10 seconds total
+}
+
+// ===== GUESS =====
+function guess(novaGroup) {
+  if (state.answered) return;
+  state.answered = true;
+  clearInterval(state.timerInterval);
+
+  const food = state.foods[state.current];
+  const correct = novaGroup === food.nova;
+  const timedOut = novaGroup === -1;
+
+  // Update score
+  if (correct) {
+    const bonus = Math.ceil(state.timerLeft / 20); // Speed bonus
+    const streakBonus = Math.min(state.streak, 3); // Streak bonus (max +3)
+    const points = 1 + bonus + streakBonus;
+    if (state.mode === 'teams') {
+      state.teams[state.currentTeam].score += points;
+    } else {
+      state.score += points;
+    }
+    state.streak++;
+    if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+  } else {
+    state.streak = 0;
+  }
+
+  // Visual feedback
+  const card = document.getElementById('foodCard');
+  const novaColors = { 1: 'var(--nova1)', 2: 'var(--nova2)', 3: 'var(--nova3)', 4: 'var(--nova4)' };
+  card.style.borderColor = novaColors[food.nova];
+  card.style.background = [, 'var(--nova1-bg)', 'var(--nova2-bg)', 'var(--nova3-bg)', 'var(--nova4-bg)'][food.nova];
+
+  // Disable buttons, highlight correct
+  document.querySelectorAll('.nova-btn').forEach(b => b.classList.add('disabled'));
+
+  // Feedback
+  const area = document.getElementById('feedbackArea');
+  if (timedOut) {
+    area.innerHTML = `<div class="feedback wrong">⏰ Time's up! It's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
+  } else if (correct) {
+    area.innerHTML = `<div class="feedback correct">✅ Correct! +${state.mode === 'teams' ? '' : (1 + Math.ceil(state.timerLeft/20) + Math.min(state.streak-1,3))} points<div class="explanation">${food.why}</div></div>`;
+    // Confetti
+    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: [novaColors[food.nova].replace('var(--nova'+food.nova+')',''), '#fff'], ticks: 40 });
+  } else {
+    area.innerHTML = `<div class="feedback wrong">❌ Nope — it's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
+  }
+
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreNum').textContent = state.mode === 'teams' ? '' : state.score;
+  if (state.mode === 'teams') updateTeamScores();
+  updateStreak();
+}
+
+function updateStreak() {
+  const el = document.getElementById('streakDisplay');
+  if (state.streak >= 2) {
+    el.textContent = '🔥 ' + state.streak + ' streak!';
+  } else {
+    el.textContent = '';
+  }
+}
+
+// ===== NEXT ROUND =====
+function nextRound() {
+  state.current++;
+  if (state.mode === 'teams') {
+    state.currentTeam = (state.currentTeam + 1) % state.teams.length;
+  }
+  showFood();
+}
+
+// ===== END GAME =====
+function endGame() {
+  showScreen('results');
+  clearInterval(state.timerInterval);
+
+  if (state.mode === 'teams') {
+    const sorted = [...state.teams].sort((a, b) => b.score - a.score);
+    const winner = sorted[0];
+    document.getElementById('resultsTitle').textContent = `${winner.name} wins! 🏆`;
+    const colors = { [state.teams[0]?.name]: '#22c55e', [state.teams[1]?.name]: '#60a5fa', [state.teams[2]?.name]: '#facc15', [state.teams[3]?.name]: '#a855f7' };
+    document.getElementById('resultsContent').innerHTML = `
+      <div class="team-scores" style="margin:20px 0;">
+        ${sorted.map((t, i) => `
+          <div class="team-card ${i === 0 ? 'winning' : ''}">
+            <div class="team-name">${i === 0 ? '👑 ' : ''}${t.name}</div>
+            <div class="team-score">${t.score}</div>
+          </div>
+        `).join('')}
+      </div>
+      <p style="color:#888; margin-top:10px;">Great teamwork everyone!</p>
+    `;
+  } else {
+    const total = state.foods.length;
+    const pct = Math.round((state.score / (total * 5)) * 100);
+    let grade, gradeClass, emoji;
+    if (pct >= 80) { grade = 'NOVA Expert! 🧑‍🔬'; gradeClass = 'grade-s'; emoji = '🏆'; }
+    else if (pct >= 60) { grade = 'Food Detective 🔍'; gradeClass = 'grade-a'; emoji = '🥈'; }
+    else if (pct >= 40) { grade = 'Learning Fast 📚'; gradeClass = 'grade-b'; emoji = '🥉'; }
+    else { grade = 'Keep Practicing! 💪'; gradeClass = 'grade-c'; emoji = '💪'; }
+
+    document.getElementById('resultsTitle').innerHTML = `${emoji} Game Over!`;
+    document.getElementById('resultsContent').innerHTML = `
+      <div class="result-grade ${gradeClass}">${grade}</div>
+      <div class="result-stats">
+        <div class="result-stat"><span class="number" style="color:var(--nova1);">${state.score}</span><span class="label">Points</span></div>
+        <div class="result-stat"><span class="number" style="color:var(--nova2);">${state.maxStreak}</span><span class="label">Best Streak</span></div>
+        <div class="result-stat"><span class="number" style="color:var(--nova3);">${total}</span><span class="label">Foods</span></div>
+      </div>
+    `;
+  }
+
+  // Big confetti
+  setTimeout(() => {
+    confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#22c55e', '#60a5fa', '#facc15', '#a855f7'] });
+  }, 300);
+}
+
+// ===== SCANNER =====
+function scanFood() {
+  const input = document.getElementById('scannerInput').value.trim().toLowerCase();
+  if (!input) return;
+  const resultDiv = document.getElementById('scanResult');
+
+  let food = scanDB[input];
+  if (!food && aliases[input]) food = scanDB[aliases[input]];
+
+  if (!food) {
+    // Try partial match
+    const partial = Object.keys(scanDB).find(k => k.includes(input) || input.includes(k));
+    if (partial) food = scanDB[partial];
+    const partialAlias = Object.keys(aliases).find(k => k.includes(input) || input.includes(k));
+    if (!food && partialAlias) food = scanDB[aliases[partialAlias]];
+  }
+
+  if (food) {
+    const colors = { 1: 'var(--nova1)', 2: 'var(--nova2)', 3: 'var(--nova3)', 4: 'var(--nova4)' };
+    const bgs = { 1: 'var(--nova1-bg)', 2: 'var(--nova2-bg)', 3: 'var(--nova3-bg)', 4: 'var(--nova4-bg)' };
+    const labels = { 1: 'Unprocessed', 2: 'Ingredient', 3: 'Processed', 4: 'Ultra-processed' };
+    resultDiv.innerHTML = `
+      <div class="scan-result" style="background:${bgs[food.nova]}; border:2px solid ${colors[food.nova]};">
+        <p style="font-size:3em;">${food.emoji}</p>
+        <h3 style="color:${colors[food.nova]};">${food.name}</h3>
+        <div class="nova-badge" style="background:rgba(255,255,255,0.1); color:${colors[food.nova]};">NOVA ${food.nova} — ${labels[food.nova]}</div>
+        <p style="margin-top:12px;">${food.why}</p>
+      </div>
+    `;
+    confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 }, colors: [colors[food.nova].replace(/var\(--nova\d\)/, '#22c55e')], ticks: 40 });
+  } else {
+    resultDiv.innerHTML = `
+      <div class="scan-result" style="background:rgba(255,255,255,0.04); border:2px solid rgba(255,255,255,0.15);">
+        <p style="font-size:2em;">🤷</p>
+        <h3>Not in our database yet!</h3>
+        <p>Try: banana, pizza, cheese, coca-cola, nutella, bread, chips...</p>
+      </div>
+    `;
+  }
+  document.getElementById('scannerInput').value = '';
+  document.getElementById('scannerInput').focus();
+}
+
+// ===== UTILS =====
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+</script>
+
+</body>
+</html>
