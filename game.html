@@ -4,239 +4,612 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NOVA Food Scanner — The Game</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;0,9..40,900;1,9..40,400&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --fern: #4a7c59;
+    --fern-light: #6a9e73;
+    --marigold: #f9a620;
+    --terracotta: #b7472a;
+    --cream: #f5f3ed;
+    --cream-dark: #e8e4da;
+    --dark: #1a2e1f;
+    --dark-deep: #0f1a12;
+    --nova1: #22c55e; --nova1-bg: rgba(34,197,94,0.12);
+    --nova2: #60a5fa; --nova2-bg: rgba(96,165,250,0.12);
+    --nova3: #facc15; --nova3-bg: rgba(250,204,21,0.12);
+    --nova4: #ef4444; --nova4-bg: rgba(239,68,68,0.12);
+    --glass: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.12);
+    --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
-    font-family: 'Inter', sans-serif;
-    background: #080810;
-    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  :root {
-    --nova1: #22c55e; --nova1-bg: #0d2818;
-    --nova2: #60a5fa; --nova2-bg: #172554;
-    --nova3: #facc15; --nova3-bg: #451a03;
-    --nova4: #ef4444; --nova4-bg: #450a0a;
+  /* ===== KEYFRAMES ===== */
+  @keyframes floatLeaf {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0.5; }
+    25% { transform: translate(30px, -40px) rotate(45deg); opacity: 0.7; }
+    50% { transform: translate(-20px, -80px) rotate(90deg); opacity: 0.5; }
+    75% { transform: translate(40px, -120px) rotate(135deg); opacity: 0.3; }
+    100% { transform: translate(10px, -160px) rotate(180deg); opacity: 0; }
+  }
+  @keyframes floatDot {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    50% { transform: translateY(-20px) scale(1.2); opacity: 0.6; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(0.8); opacity: 0.8; box-shadow: 0 0 0 0 rgba(74,124,89,0.5); }
+    50% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 20px rgba(74,124,89,0); }
+    100% { transform: scale(0.8); opacity: 0.8; box-shadow: 0 0 0 0 rgba(74,124,89,0); }
+  }
+  @keyframes springIn {
+    0% { transform: translateY(60px) scale(0.8); opacity: 0; }
+    60% { transform: translateY(-10px) scale(1.02); opacity: 1; }
+    80% { transform: translateY(4px) scale(0.99); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes pressDown {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.93) translateY(3px); }
+    100% { transform: scale(1); }
+  }
+  @keyframes timerPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(239,68,68,0); }
+    50% { box-shadow: 0 0 12px rgba(239,68,68,0.5); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scanPulse {
+    0% { transform: scale(0.6); opacity: 0.9; border-color: var(--fern); }
+    50% { transform: scale(1.1); opacity: 0.3; border-color: var(--nova1); }
+    100% { transform: scale(0.6); opacity: 0.9; border-color: var(--fern); }
+  }
+
+  /* ===== FLOATING BACKGROUND ELEMENTS ===== */
+  .bg-botanical {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .bg-botanical .dot {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatDot 6s ease-in-out infinite;
   }
 
   /* ===== SCREENS ===== */
-  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen { display: none; min-height: 100vh; padding: 20px; position: relative; z-index: 1; }
   .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ===== BOTANICAL SVG DECORATIONS ===== */
+  .deco-leaf {
+    position: absolute; opacity: 0.08; pointer-events: none;
+  }
 
   /* ===== START SCREEN ===== */
   #start {
     justify-content: center; text-align: center;
-    background: linear-gradient(135deg, #020208, #0a0520, #0d2818, #0a0520, #020208);
+    background: var(--cream);
   }
-  #start h1 { font-size: 3em; font-weight: 900; margin-bottom: 10px; }
-  #start .subtitle { color: #888; font-size: 1.1em; max-width: 500px; margin: 0 auto 30px; }
+  #start h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 3em; font-weight: 700; margin-bottom: 10px; color: var(--dark);
+  }
+  #start h1 .accent { color: var(--fern); }
+  #start .subtitle {
+    color: #777; font-size: 1.1em; max-width: 500px; margin: 0 auto 30px;
+  }
+  #start .handwritten {
+    font-family: 'Caveat', cursive; color: var(--marigold); font-size: 1.3em;
+    margin-bottom: 8px;
+  }
+
+  /* Mode cards — claymorphism */
   .mode-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
   .mode-card {
-    background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 20px; padding: 30px 24px; width: 220px; text-align: center;
-    cursor: pointer; transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    background: #fff;
+    border-radius: 24px; padding: 30px 24px; width: 220px; text-align: center;
+    cursor: pointer;
+    box-shadow:
+      8px 8px 16px rgba(0,0,0,0.06),
+      -4px -4px 12px rgba(255,255,255,0.9),
+      inset 2px 2px 4px rgba(255,255,255,0.8),
+      inset -1px -1px 3px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: all 0.4s var(--bounce);
   }
-  .mode-card:hover { transform: translateY(-8px); border-color: var(--nova1); box-shadow: 0 20px 40px rgba(34,197,94,0.15); }
+  .mode-card:hover {
+    transform: translateY(-8px) rotate(-1deg) scale(1.02);
+    box-shadow:
+      12px 16px 28px rgba(74,124,89,0.12),
+      -4px -4px 12px rgba(255,255,255,0.9),
+      inset 2px 2px 4px rgba(255,255,255,0.8),
+      inset -1px -1px 3px rgba(0,0,0,0.04);
+  }
+  .mode-card:active { animation: pressDown 0.3s ease; }
   .mode-card .icon { font-size: 2.5em; margin-bottom: 10px; }
-  .mode-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; margin-bottom: 6px; }
-  .mode-card p { font-size: 0.8em; color: #888; }
+  .mode-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; margin-bottom: 6px; color: var(--dark); }
+  .mode-card p { font-size: 0.8em; color: #888; line-height: 1.4; }
+  .mode-card.solo-card:hover { box-shadow: 12px 16px 28px rgba(74,124,89,0.15), -4px -4px 12px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.8); }
+  .mode-card.team-card:hover { box-shadow: 12px 16px 28px rgba(249,166,32,0.15), -4px -4px 12px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.8); }
+  .mode-card.scan-card:hover { box-shadow: 12px 16px 28px rgba(183,71,42,0.15), -4px -4px 12px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.8); }
 
   /* ===== GAME SCREEN ===== */
-  #game { padding-top: 30px; }
+  #game {
+    padding-top: 30px;
+    background: var(--dark-deep);
+    color: #fff;
+    position: relative;
+  }
+  #game::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(74,124,89,0.08) 1px, transparent 1px),
+      radial-gradient(circle at 60% 70%, rgba(74,124,89,0.06) 1.5px, transparent 1.5px),
+      radial-gradient(circle at 80% 20%, rgba(74,124,89,0.05) 1px, transparent 1px),
+      radial-gradient(circle at 40% 80%, rgba(249,166,32,0.04) 1px, transparent 1px);
+    background-size: 80px 80px, 120px 120px, 100px 100px, 90px 90px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  #game > * { position: relative; z-index: 1; }
+
   .game-header {
     width: 100%; max-width: 700px; display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 20px; padding: 0 10px;
   }
-  .score-display { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; }
+  .score-display { font-family: 'Space Grotesk', sans-serif; font-size: 1.1em; color: rgba(255,255,255,0.7); }
   .score-display span { font-weight: 700; color: var(--nova1); font-size: 1.4em; }
-  .round-display { color: #888; font-size: 0.9em; }
-  .streak-display { font-size: 0.85em; color: var(--nova3); }
+  .round-display { color: rgba(255,255,255,0.4); font-size: 0.9em; }
+  .streak-display { font-size: 0.85em; color: var(--marigold); font-family: 'Space Grotesk', sans-serif; }
 
   .progress-bar-container {
-    width: 100%; max-width: 700px; height: 6px; background: rgba(255,255,255,0.08);
+    width: 100%; max-width: 700px; height: 6px;
+    background: rgba(255,255,255,0.06);
     border-radius: 3px; margin-bottom: 24px; overflow: hidden;
   }
   .progress-fill {
-    height: 100%; background: linear-gradient(90deg, var(--nova1), var(--nova2));
+    height: 100%;
+    background: linear-gradient(90deg, var(--fern), var(--nova1));
     border-radius: 3px; transition: width 0.5s ease;
   }
 
-  /* Food card */
+  /* Food card — glassmorphism with green tint */
   .food-card {
-    background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
+    background: rgba(74,124,89,0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(74,124,89,0.2);
     border-radius: 28px; padding: 40px; text-align: center; max-width: 500px; width: 100%;
-    transition: all 0.3s; margin-bottom: 24px;
+    transition: all 0.4s var(--smooth);
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    animation: fadeUp 0.4s ease;
   }
   .food-card .food-emoji { font-size: 5em; margin-bottom: 10px; }
-  .food-card .food-name { font-size: 1.8em; font-weight: 700; margin-bottom: 6px; }
-  .food-card .food-hint { color: #666; font-size: 0.85em; font-style: italic; }
+  .food-card .food-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.8em; font-weight: 700; margin-bottom: 6px; color: #fff;
+  }
+  .food-card .food-hint {
+    color: rgba(255,255,255,0.4); font-size: 0.85em;
+    font-family: 'Caveat', cursive; font-size: 1em;
+  }
 
-  /* NOVA buttons */
+  /* NOVA buttons — claymorphism on dark */
   .nova-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; width: 100%; }
   .nova-btn {
-    border: none; border-radius: 18px; padding: 20px; font-size: 1em; font-weight: 700;
+    border: none; border-radius: 22px; padding: 22px 16px; font-size: 1em; font-weight: 700;
     font-family: 'Space Grotesk', sans-serif; cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1); color: #fff; position: relative; overflow: hidden;
+    transition: all 0.35s var(--bounce); color: #fff; position: relative; overflow: hidden;
+    min-height: 70px;
+    touch-action: manipulation;
   }
-  .nova-btn:hover { transform: scale(1.05); }
-  .nova-btn:active { transform: scale(0.97); }
-  .nova-btn-1 { background: linear-gradient(135deg, #0d2818, #166534); border: 2px solid var(--nova1); }
-  .nova-btn-1:hover { box-shadow: 0 0 30px rgba(34,197,94,0.3); }
-  .nova-btn-2 { background: linear-gradient(135deg, #0c1a3a, #1e3a5f); border: 2px solid var(--nova2); }
-  .nova-btn-2:hover { box-shadow: 0 0 30px rgba(96,165,250,0.3); }
-  .nova-btn-3 { background: linear-gradient(135deg, #2d1a00, #713f12); border: 2px solid var(--nova3); }
-  .nova-btn-3:hover { box-shadow: 0 0 30px rgba(250,204,21,0.3); }
-  .nova-btn-4 { background: linear-gradient(135deg, #2a0a0a, #7f1d1d); border: 2px solid var(--nova4); }
-  .nova-btn-4:hover { box-shadow: 0 0 30px rgba(239,68,68,0.3); }
+  /* Claymorphism: soft 3D raised tiles */
+  .nova-btn-1 {
+    background: linear-gradient(145deg, #1e4d2b, #16382a);
+    box-shadow:
+      6px 6px 14px rgba(0,0,0,0.4),
+      -3px -3px 10px rgba(34,197,94,0.08),
+      inset 2px 2px 4px rgba(34,197,94,0.15),
+      inset -1px -1px 3px rgba(0,0,0,0.2);
+    border: 1.5px solid rgba(34,197,94,0.25);
+  }
+  .nova-btn-2 {
+    background: linear-gradient(145deg, #1c3156, #152a4a);
+    box-shadow:
+      6px 6px 14px rgba(0,0,0,0.4),
+      -3px -3px 10px rgba(96,165,250,0.08),
+      inset 2px 2px 4px rgba(96,165,250,0.15),
+      inset -1px -1px 3px rgba(0,0,0,0.2);
+    border: 1.5px solid rgba(96,165,250,0.25);
+  }
+  .nova-btn-3 {
+    background: linear-gradient(145deg, #3d2c08, #2d1f06);
+    box-shadow:
+      6px 6px 14px rgba(0,0,0,0.4),
+      -3px -3px 10px rgba(250,204,21,0.08),
+      inset 2px 2px 4px rgba(250,204,21,0.15),
+      inset -1px -1px 3px rgba(0,0,0,0.2);
+    border: 1.5px solid rgba(250,204,21,0.25);
+  }
+  .nova-btn-4 {
+    background: linear-gradient(145deg, #4a1616, #361111);
+    box-shadow:
+      6px 6px 14px rgba(0,0,0,0.4),
+      -3px -3px 10px rgba(239,68,68,0.08),
+      inset 2px 2px 4px rgba(239,68,68,0.15),
+      inset -1px -1px 3px rgba(0,0,0,0.2);
+    border: 1.5px solid rgba(239,68,68,0.25);
+  }
+  .nova-btn:hover {
+    transform: translateY(-5px) scale(1.03);
+  }
+  .nova-btn-1:hover { box-shadow: 8px 10px 20px rgba(0,0,0,0.5), 0 0 25px rgba(34,197,94,0.15), inset 2px 2px 4px rgba(34,197,94,0.15); }
+  .nova-btn-2:hover { box-shadow: 8px 10px 20px rgba(0,0,0,0.5), 0 0 25px rgba(96,165,250,0.15), inset 2px 2px 4px rgba(96,165,250,0.15); }
+  .nova-btn-3:hover { box-shadow: 8px 10px 20px rgba(0,0,0,0.5), 0 0 25px rgba(250,204,21,0.15), inset 2px 2px 4px rgba(250,204,21,0.15); }
+  .nova-btn-4:hover { box-shadow: 8px 10px 20px rgba(0,0,0,0.5), 0 0 25px rgba(239,68,68,0.15), inset 2px 2px 4px rgba(239,68,68,0.15); }
+  .nova-btn:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3), inset 3px 3px 6px rgba(0,0,0,0.3);
+  }
   .nova-btn .btn-num { font-size: 1.6em; display: block; }
-  .nova-btn .btn-label { font-size: 0.75em; color: rgba(255,255,255,0.7); }
-  .nova-btn.disabled { opacity: 0.3; pointer-events: none; }
+  .nova-btn .btn-label { font-size: 0.75em; color: rgba(255,255,255,0.6); }
+  .nova-btn.disabled { opacity: 0.25; pointer-events: none; }
 
   /* Feedback */
   .feedback {
-    margin-top: 16px; padding: 16px 28px; border-radius: 16px; font-weight: 600;
+    margin-top: 16px; padding: 18px 28px; border-radius: 20px; font-weight: 600;
     font-size: 1em; max-width: 500px; width: 100%; text-align: center;
-    animation: feedbackIn 0.3s ease;
+    animation: springIn 0.5s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
-  @keyframes feedbackIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .feedback.correct { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
-  .feedback.wrong { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-  .feedback .explanation { font-weight: 400; font-size: 0.85em; color: #aaa; margin-top: 6px; }
+  .feedback.correct {
+    background: rgba(74,124,89,0.2);
+    border: 1.5px solid rgba(74,124,89,0.4);
+    color: #86efac;
+  }
+  .feedback.correct::before { content: ''; }
+  .feedback.wrong {
+    background: rgba(183,71,42,0.15);
+    border: 1.5px solid rgba(183,71,42,0.35);
+    color: #f0a090;
+  }
+  .feedback .explanation { font-weight: 400; font-size: 0.85em; color: rgba(255,255,255,0.5); margin-top: 8px; }
 
   .next-btn {
-    margin-top: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    color: #fff; padding: 14px 40px; border-radius: 14px; font-size: 1em; font-weight: 600;
-    cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif;
+    margin-top: 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff; padding: 14px 40px; border-radius: 16px; font-size: 1em; font-weight: 600;
+    cursor: pointer; transition: all 0.35s var(--bounce);
+    font-family: 'DM Sans', sans-serif;
+    touch-action: manipulation;
   }
-  .next-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.03); }
+  .next-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
   /* Timer bar */
   .timer-bar {
-    width: 100%; max-width: 500px; height: 5px; background: rgba(255,255,255,0.06);
-    border-radius: 3px; margin-top: 8px; overflow: hidden;
+    width: 100%; max-width: 500px; height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px; margin-top: 10px; overflow: hidden;
+    transition: box-shadow 0.3s;
   }
   .timer-fill {
-    height: 100%; background: var(--nova1); border-radius: 3px;
-    transition: width 0.1s linear;
+    height: 100%; background: var(--fern); border-radius: 4px;
+    transition: width 0.1s linear, background 0.3s;
   }
-  .timer-fill.warning { background: var(--nova3); }
-  .timer-fill.danger { background: var(--nova4); }
+  .timer-fill.warning { background: var(--marigold); }
+  .timer-fill.danger {
+    background: var(--terracotta);
+    animation: pulse 0.6s ease-in-out infinite;
+  }
+  .timer-bar.pulsing { animation: timerPulse 0.8s ease-in-out infinite; }
 
   /* ===== SCANNER MODE ===== */
+  #scanner {
+    background: var(--dark-deep);
+    color: #fff;
+  }
+  #scanner::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(circle at 30% 40%, rgba(74,124,89,0.06) 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(74,124,89,0.04) 1.5px, transparent 1.5px);
+    background-size: 80px 80px, 120px 120px;
+    pointer-events: none;
+  }
+  #scanner > * { position: relative; z-index: 1; }
+
   .scanner-input {
-    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 16px; padding: 18px 24px; font-size: 1.1em; color: #fff;
-    font-family: 'Inter', sans-serif; width: 100%; max-width: 500px; text-align: center;
-    outline: none; transition: border-color 0.3s;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(74,124,89,0.25);
+    border-radius: 20px; padding: 18px 24px; font-size: 1.1em; color: #fff;
+    font-family: 'DM Sans', sans-serif; width: 100%; max-width: 500px; text-align: center;
+    outline: none; transition: all 0.35s var(--smooth);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
-  .scanner-input:focus { border-color: var(--nova1); }
-  .scanner-input::placeholder { color: #555; }
+  .scanner-input:focus { border-color: var(--fern); box-shadow: 0 0 20px rgba(74,124,89,0.15); }
+  .scanner-input::placeholder { color: rgba(255,255,255,0.3); }
+
   .scan-btn {
-    margin-top: 12px; background: linear-gradient(135deg, #0d2818, #166534);
-    border: 2px solid var(--nova1); color: #fff; padding: 16px 40px; border-radius: 16px;
-    font-size: 1.1em; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
-    transition: all 0.3s;
+    margin-top: 14px;
+    background: linear-gradient(145deg, #2d5a3a, #1e4d2b);
+    border: 1.5px solid rgba(74,124,89,0.4);
+    color: #fff; padding: 16px 44px; border-radius: 20px;
+    font-size: 1.1em; font-weight: 700; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.35s var(--bounce);
+    box-shadow:
+      6px 6px 14px rgba(0,0,0,0.3),
+      inset 2px 2px 4px rgba(74,124,89,0.2),
+      inset -1px -1px 3px rgba(0,0,0,0.15);
+    touch-action: manipulation;
   }
-  .scan-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+  .scan-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 8px 10px 20px rgba(0,0,0,0.4), 0 0 20px rgba(74,124,89,0.15); }
+  .scan-btn:active { transform: translateY(2px) scale(0.97); }
+
+  /* Scan animation ring */
+  .scan-ring-container {
+    display: flex; align-items: center; justify-content: center;
+    margin: 30px 0 10px;
+    position: relative; width: 120px; height: 120px;
+  }
+  .scan-ring {
+    position: absolute;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--fern);
+    animation: scanPulse 1.2s ease-in-out infinite;
+  }
+  .scan-ring:nth-child(2) { animation-delay: 0.4s; width: 70px; height: 70px; }
+  .scan-ring:nth-child(3) { animation-delay: 0.8s; width: 40px; height: 40px; }
+  .scan-ring-icon { font-size: 2em; z-index: 2; }
+
   .scan-result {
     margin-top: 20px; max-width: 500px; width: 100%;
-    border-radius: 20px; padding: 30px; text-align: center;
-    animation: feedbackIn 0.4s ease;
+    border-radius: 24px; padding: 30px; text-align: center;
+    animation: springIn 0.6s ease;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
-  .scan-result h3 { font-size: 1.4em; margin-bottom: 8px; }
-  .scan-result p { font-size: 0.9em; color: #aaa; }
+  .scan-result h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.4em; margin-bottom: 8px; }
+  .scan-result p { font-size: 0.9em; color: rgba(255,255,255,0.5); }
   .scan-result .nova-badge {
-    display: inline-block; padding: 8px 20px; border-radius: 12px;
-    font-weight: 700; font-size: 1.2em; margin-top: 10px;
+    display: inline-block; padding: 10px 24px; border-radius: 16px;
+    font-weight: 700; font-size: 1.1em; margin-top: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    box-shadow: inset 2px 2px 4px rgba(255,255,255,0.1), inset -1px -1px 3px rgba(0,0,0,0.15);
   }
 
   /* ===== RESULTS SCREEN ===== */
-  #results { justify-content: center; text-align: center; background: linear-gradient(135deg, #020208, #0d2818, #020208); }
-  #results h1 { font-size: 3em; margin-bottom: 10px; }
-  .result-stats { display: flex; gap: 30px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
-  .result-stat { text-align: center; }
-  .result-stat .number { font-size: 3em; font-weight: 900; display: block; }
-  .result-stat .label { font-size: 0.8em; color: #888; }
-  .result-grade {
-    font-size: 1.5em; font-weight: 700; padding: 12px 30px; border-radius: 16px;
-    margin: 20px 0; display: inline-block;
+  #results {
+    justify-content: center; text-align: center;
+    background: var(--cream);
+    color: var(--dark);
   }
-  .grade-s { background: rgba(34,197,94,0.15); color: #4ade80; border: 2px solid rgba(34,197,94,0.3); }
-  .grade-a { background: rgba(96,165,250,0.15); color: #93c5fd; border: 2px solid rgba(96,165,250,0.3); }
-  .grade-b { background: rgba(250,204,21,0.15); color: #fde047; border: 2px solid rgba(250,204,21,0.3); }
-  .grade-c { background: rgba(239,68,68,0.15); color: #fca5a5; border: 2px solid rgba(239,68,68,0.3); }
-  .play-again-btn {
-    margin-top: 20px; background: linear-gradient(135deg, #0d2818, #166534);
-    border: 2px solid var(--nova1); color: #fff; padding: 16px 40px; border-radius: 16px;
-    font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  #results h1 {
     font-family: 'Space Grotesk', sans-serif;
+    font-size: 3em; margin-bottom: 10px; color: var(--dark);
   }
-  .play-again-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+  .result-stats { display: flex; gap: 30px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+  .result-stat {
+    text-align: center;
+    background: #fff;
+    border-radius: 20px; padding: 20px 28px;
+    box-shadow: 6px 6px 14px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.8),
+      inset 2px 2px 4px rgba(255,255,255,0.8), inset -1px -1px 3px rgba(0,0,0,0.03);
+  }
+  .result-stat .number {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.8em; font-weight: 700; display: block;
+  }
+  .result-stat .label { font-size: 0.8em; color: #888; margin-top: 4px; }
+  .result-grade {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.4em; font-weight: 700; padding: 14px 32px; border-radius: 20px;
+    margin: 20px 0; display: inline-block;
+    animation: springIn 0.5s ease;
+  }
+  .grade-s {
+    background: rgba(74,124,89,0.12); color: var(--fern);
+    border: 2px solid rgba(74,124,89,0.25);
+    box-shadow: 0 4px 16px rgba(74,124,89,0.1);
+  }
+  .grade-a {
+    background: rgba(96,165,250,0.1); color: #3b82f6;
+    border: 2px solid rgba(96,165,250,0.25);
+  }
+  .grade-b {
+    background: rgba(249,166,32,0.1); color: var(--marigold);
+    border: 2px solid rgba(249,166,32,0.25);
+  }
+  .grade-c {
+    background: rgba(183,71,42,0.1); color: var(--terracotta);
+    border: 2px solid rgba(183,71,42,0.25);
+  }
+  .play-again-btn {
+    margin-top: 20px;
+    background: linear-gradient(145deg, #5a8e69, #4a7c59);
+    border: none; color: #fff; padding: 16px 44px; border-radius: 20px;
+    font-size: 1.1em; font-weight: 700; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.35s var(--bounce);
+    box-shadow: 6px 6px 14px rgba(0,0,0,0.1), -3px -3px 8px rgba(255,255,255,0.6),
+      inset 2px 2px 4px rgba(255,255,255,0.2), inset -1px -1px 3px rgba(0,0,0,0.1);
+    touch-action: manipulation;
+  }
+  .play-again-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 8px 10px 24px rgba(74,124,89,0.2); }
+  .play-again-btn:active { transform: translateY(2px) scale(0.97); }
 
   /* Team scoreboard */
-  .team-scores { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+  .team-scores { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; justify-content: center; }
   .team-card {
-    background: rgba(255,255,255,0.04); border-radius: 16px; padding: 20px 28px;
-    min-width: 120px; text-align: center; border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 16px 24px;
+    min-width: 110px; text-align: center;
+    transition: all 0.4s var(--bounce);
   }
-  .team-card.winning { border-color: var(--nova1); box-shadow: 0 0 30px rgba(34,197,94,0.15); }
-  .team-card .team-name { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-  .team-card .team-score { font-size: 2em; font-weight: 900; color: var(--nova1); }
+  /* Team cards: different context styling */
+  #game .team-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255,255,255,0.1);
+  }
+  #game .team-card.winning {
+    border-color: var(--fern);
+    box-shadow: 0 0 20px rgba(74,124,89,0.15);
+  }
+  #game .team-card .team-name { font-weight: 700; font-size: 1em; margin-bottom: 4px; color: #fff; }
+  #game .team-card .team-score {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2em; font-weight: 700; color: var(--nova1);
+  }
 
-  /* Team setup */
+  /* Results team cards (light bg) */
+  #results .team-card, #teamSetup .team-card {
+    background: #fff;
+    box-shadow: 6px 6px 14px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.8),
+      inset 2px 2px 4px rgba(255,255,255,0.8), inset -1px -1px 3px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  #results .team-card.winning, #teamSetup .team-card.winning {
+    border-color: var(--fern);
+    box-shadow: 6px 6px 14px rgba(74,124,89,0.1), -3px -3px 10px rgba(255,255,255,0.8);
+  }
+  #results .team-card .team-name, #teamSetup .team-card .team-name {
+    font-weight: 700; font-size: 1em; margin-bottom: 4px;
+  }
+  #results .team-card .team-score, #teamSetup .team-card .team-score {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2em; font-weight: 700; color: var(--fern);
+  }
+
+  /* ===== TEAM SETUP ===== */
+  #teamSetup {
+    background: var(--cream);
+    color: var(--dark);
+  }
+  #teamSetup h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--dark);
+  }
   .team-setup { max-width: 400px; width: 100%; margin-top: 20px; }
   .team-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
   .team-input {
-    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px; padding: 12px 16px; color: #fff; font-family: 'Inter', sans-serif;
+    flex: 1;
+    background: #fff;
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 16px; padding: 14px 18px; color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
     font-size: 1em; outline: none;
-  }
-  .team-input:focus { border-color: var(--nova1); }
-  .add-team-btn {
-    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #4ade80;
-    border-radius: 12px; padding: 12px 20px; cursor: pointer; font-weight: 700; font-size: 1.2em;
+    box-shadow: inset 2px 2px 4px rgba(0,0,0,0.03);
     transition: all 0.3s;
   }
-  .add-team-btn:hover { background: rgba(34,197,94,0.25); }
+  .team-input:focus { border-color: var(--fern); box-shadow: 0 0 12px rgba(74,124,89,0.1); }
+  .team-input::placeholder { color: #bbb; }
+  .add-team-btn {
+    background: linear-gradient(145deg, #5a8e69, #4a7c59);
+    border: none; color: #fff;
+    border-radius: 16px; padding: 14px 22px; cursor: pointer; font-weight: 700; font-size: 1.3em;
+    transition: all 0.35s var(--bounce);
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.08), inset 2px 2px 3px rgba(255,255,255,0.15);
+    touch-action: manipulation;
+  }
+  .add-team-btn:hover { transform: scale(1.08); }
+  .add-team-btn:active { transform: scale(0.95); }
 
-  /* Mobile */
+  /* Light-context buttons */
+  .light-next-btn {
+    margin-top: 16px;
+    background: #fff;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    color: var(--dark); padding: 14px 40px; border-radius: 16px; font-size: 1em; font-weight: 600;
+    cursor: pointer; transition: all 0.35s var(--bounce);
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.04), -2px -2px 6px rgba(255,255,255,0.8);
+    touch-action: manipulation;
+  }
+  .light-next-btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 16px rgba(0,0,0,0.06); }
+
+  /* ===== MOBILE ===== */
   @media (max-width: 600px) {
     #start h1 { font-size: 2em; }
     .mode-cards { flex-direction: column; align-items: center; }
-    .mode-card { width: 100%; max-width: 300px; }
+    .mode-card { width: 100%; max-width: 300px; padding: 24px 20px; }
+    .food-card { padding: 28px 20px; }
     .food-card .food-emoji { font-size: 3.5em; }
     .food-card .food-name { font-size: 1.3em; }
-    .nova-buttons { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .nova-btn { padding: 14px; }
-    .result-stats { gap: 15px; }
+    .nova-buttons { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .nova-btn { padding: 18px 12px; min-height: 64px; border-radius: 18px; }
+    .result-stats { gap: 12px; }
+    .result-stat { padding: 14px 20px; }
     .result-stat .number { font-size: 2em; }
+    .team-card { padding: 12px 18px; min-width: 90px; }
+    .team-card .team-score { font-size: 1.6em; }
+    .scan-ring-container { width: 90px; height: 90px; }
+    .scan-ring { width: 75px; height: 75px; }
+    .scan-ring:nth-child(2) { width: 52px; height: 52px; }
+    .scan-ring:nth-child(3) { width: 30px; height: 30px; }
   }
 </style>
 </head>
 <body>
 
+<!-- ===== FLOATING BACKGROUND (start/results/teamSetup) ===== -->
+<div class="bg-botanical" id="bgBotanical"></div>
+
 <!-- ===== START SCREEN ===== -->
 <div class="screen active" id="start">
-  <p style="font-size:4em; margin-bottom:10px;">🔬</p>
-  <h1>NOVA <span style="color:#22c55e;">Food Scanner</span></h1>
-  <p class="subtitle">How well can you classify food? Test your knowledge of the NOVA system!</p>
+  <!-- Decorative SVGs -->
+  <svg class="deco-leaf" style="top:8%;left:5%;width:80px;height:80px;transform:rotate(-20deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#4a7c59" opacity="0.07"/><line x1="5" y1="50" x2="95" y2="50" stroke="#4a7c59" stroke-width="1" opacity="0.1"/></svg>
+  <svg class="deco-leaf" style="top:15%;right:8%;width:60px;height:60px;transform:rotate(30deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#f9a620" opacity="0.06"/></svg>
+  <svg class="deco-leaf" style="bottom:12%;left:10%;width:70px;height:70px;transform:rotate(50deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#b7472a" opacity="0.05"/></svg>
+  <svg class="deco-leaf" style="bottom:20%;right:6%;width:90px;height:90px;transform:rotate(-40deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#4a7c59" opacity="0.06"/></svg>
+
+  <p style="font-size:3.5em; margin-bottom:6px;">&#x1F33F;</p>
+  <p class="handwritten">How well do you know your food?</p>
+  <h1>NOVA <span class="accent">Food Scanner</span></h1>
+  <p class="subtitle">Test your knowledge of the NOVA food classification system. Can you tell fresh from factory?</p>
   <div class="mode-cards">
-    <div class="mode-card" onclick="startGame('solo')">
-      <div class="icon">🎯</div>
+    <div class="mode-card solo-card animate__animated animate__fadeInUp" style="animation-delay:0.1s" onclick="startGame('solo')">
+      <div class="icon">&#x1F3AF;</div>
       <h3>Solo Challenge</h3>
       <p>20 foods, beat the timer<br>How many can you get right?</p>
     </div>
-    <div class="mode-card" onclick="startGame('teams')">
-      <div class="icon">👥</div>
+    <div class="mode-card team-card animate__animated animate__fadeInUp" style="animation-delay:0.2s" onclick="startGame('teams')">
+      <div class="icon">&#x1F331;</div>
       <h3>Team Battle</h3>
       <p>Teams take turns<br>Most points wins!</p>
     </div>
-    <div class="mode-card" onclick="startGame('scanner')">
-      <div class="icon">📱</div>
+    <div class="mode-card scan-card animate__animated animate__fadeInUp" style="animation-delay:0.3s" onclick="startGame('scanner')">
+      <div class="icon">&#x1F50D;</div>
       <h3>Food Scanner</h3>
       <p>Type any food<br>and find its NOVA group</p>
     </div>
@@ -245,7 +618,10 @@
 
 <!-- ===== TEAM SETUP SCREEN ===== -->
 <div class="screen" id="teamSetup">
-  <p style="font-size:3em; margin-top:40px;">👥</p>
+  <svg class="deco-leaf" style="top:5%;right:10%;width:70px;height:70px;transform:rotate(25deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#4a7c59" opacity="0.07"/></svg>
+  <svg class="deco-leaf" style="bottom:10%;left:8%;width:60px;height:60px;transform:rotate(-30deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#f9a620" opacity="0.06"/></svg>
+
+  <p style="font-size:3em; margin-top:40px;">&#x1F331;</p>
   <h2 style="font-size:2em; margin:10px 0;">Team Setup</h2>
   <p style="color:#888; margin-bottom:20px;">Add 2-4 teams, then start!</p>
   <div class="team-setup">
@@ -257,7 +633,7 @@
   </div>
   <div class="team-scores" id="setupTeamPreview"></div>
   <button class="play-again-btn" id="startTeamGame" onclick="startTeamGame()" style="margin-top:20px; display:none;">
-    Start Game →
+    Start Game &#x2192;
   </button>
 </div>
 
@@ -271,13 +647,13 @@
   <!-- Team indicator -->
   <div id="teamIndicator" style="display:none; margin-bottom:12px;">
     <div class="team-scores" id="gameTeamScores"></div>
-    <p id="currentTeamLabel" style="color:#4ade80; font-weight:700; font-size:1.1em; margin-top:10px;"></p>
+    <p id="currentTeamLabel" style="color:var(--fern-light); font-weight:700; font-size:1.1em; margin-top:10px; font-family:'Space Grotesk',sans-serif;"></p>
   </div>
   <div class="progress-bar-container">
     <div class="progress-fill" id="progressFill" style="width:0%"></div>
   </div>
   <div class="food-card" id="foodCard">
-    <div class="food-emoji" id="foodEmoji">🍌</div>
+    <div class="food-emoji" id="foodEmoji">&#x1F34C;</div>
     <div class="food-name" id="foodName">Banana</div>
     <div class="food-hint" id="foodHint"></div>
   </div>
@@ -291,78 +667,112 @@
     <button class="nova-btn nova-btn-4" onclick="guess(4)"><span class="btn-num">4</span><span class="btn-label">Ultra-processed</span></button>
   </div>
   <div id="feedbackArea"></div>
-  <button class="next-btn" id="nextBtn" style="display:none;" onclick="nextRound()">Next →</button>
+  <button class="next-btn" id="nextBtn" style="display:none;" onclick="nextRound()">Next &#x2192;</button>
 </div>
 
 <!-- ===== SCANNER SCREEN ===== -->
 <div class="screen" id="scanner">
-  <p style="font-size:4em; margin-top:60px;">📱</p>
-  <h2 style="font-size:2em; margin:10px 0;">Food Scanner</h2>
-  <p style="color:#888; margin-bottom:24px;">Type any food and we'll classify it!</p>
+  <p style="font-size:3.5em; margin-top:50px;">&#x1F33F;</p>
+  <h2 style="font-size:2em; margin:10px 0; font-family:'Space Grotesk',sans-serif; color:#fff;">Food Scanner</h2>
+  <p style="color:rgba(255,255,255,0.4); margin-bottom:24px; font-family:'Caveat',cursive; font-size:1.15em;">Type any food and we'll classify it!</p>
   <input class="scanner-input" id="scannerInput" placeholder="Type a food... (e.g. Pizza)" onkeydown="if(event.key==='Enter')scanFood()">
-  <button class="scan-btn" onclick="scanFood()">🔍 Scan</button>
+  <button class="scan-btn" onclick="scanFood()">&#x1F50D; Scan</button>
+  <div id="scanAnimContainer" style="display:none;">
+    <div class="scan-ring-container">
+      <div class="scan-ring"></div>
+      <div class="scan-ring"></div>
+      <div class="scan-ring"></div>
+      <span class="scan-ring-icon">&#x1F33F;</span>
+    </div>
+  </div>
   <div id="scanResult"></div>
-  <button class="next-btn" style="margin-top:30px;" onclick="showScreen('start')">← Back</button>
+  <button class="next-btn" style="margin-top:30px;" onclick="showScreen('start')">&#x2190; Back</button>
 </div>
 
 <!-- ===== RESULTS SCREEN ===== -->
 <div class="screen" id="results">
-  <p style="font-size:4em;">🏆</p>
+  <!-- Decorative SVGs -->
+  <svg class="deco-leaf" style="top:6%;left:8%;width:80px;height:80px;transform:rotate(-15deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#4a7c59" opacity="0.07"/></svg>
+  <svg class="deco-leaf" style="top:10%;right:6%;width:65px;height:65px;transform:rotate(40deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#f9a620" opacity="0.06"/></svg>
+  <svg class="deco-leaf" style="bottom:8%;left:12%;width:75px;height:75px;transform:rotate(60deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#b7472a" opacity="0.05"/></svg>
+  <svg class="deco-leaf" style="bottom:15%;right:10%;width:55px;height:55px;transform:rotate(-35deg);" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="22" fill="#4a7c59" opacity="0.06"/></svg>
+
+  <p style="font-size:4em;">&#x1F3C6;</p>
   <h1 id="resultsTitle">Game Over!</h1>
   <div id="resultsContent"></div>
-  <button class="play-again-btn" onclick="showScreen('start')">🔄 Play Again</button>
-  <button class="next-btn" style="margin-top:10px;" onclick="showScreen('start')">← Menu</button>
+  <button class="play-again-btn" onclick="showScreen('start')">&#x1F504; Play Again</button>
+  <button class="light-next-btn" style="margin-top:10px;" onclick="showScreen('start')">&#x2190; Menu</button>
 </div>
 
 <script>
+// ===== BACKGROUND DOTS =====
+(function initBgDots() {
+  const container = document.getElementById('bgBotanical');
+  const colors = ['#4a7c59','#f9a620','#b7472a','#6a9e73','#d4a05a'];
+  for (let i = 0; i < 18; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    const size = 4 + Math.random() * 10;
+    dot.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-delay:${Math.random()*6}s;
+      animation-duration:${5+Math.random()*5}s;
+      opacity:${0.15+Math.random()*0.15};
+    `;
+    container.appendChild(dot);
+  }
+})();
+
 // ===== FOOD DATABASE =====
 const foods = [
-  { emoji: '🍌', name: 'Banana', nova: 1, hint: 'Straight from the tree', why: 'A fresh fruit with nothing added.' },
-  { emoji: '🥕', name: 'Carrot', nova: 1, hint: 'Grows underground', why: 'A raw vegetable — as natural as it gets.' },
-  { emoji: '🥚', name: 'Egg', nova: 1, hint: 'From the chicken', why: 'Minimally processed natural food.' },
-  { emoji: '🍚', name: 'Rice', nova: 1, hint: 'A grain staple', why: 'Dried and packaged but nothing added.' },
-  { emoji: '🍗', name: 'Chicken breast', nova: 1, hint: 'Plain protein', why: 'Fresh meat, unprocessed.' },
-  { emoji: '🥛', name: 'Milk', nova: 1, hint: 'From the cow', why: 'Pasteurized but nothing else added.' },
-  { emoji: '🍎', name: 'Apple', nova: 1, hint: 'Pick it from a tree', why: 'Fresh fruit, no processing.' },
-  { emoji: '🥜', name: 'Peanuts (plain)', nova: 1, hint: 'Roasted, no coating', why: 'Minimally processed — just roasted.' },
-  { emoji: '🥔', name: 'Potato', nova: 1, hint: 'Dig it up', why: 'A natural root vegetable.' },
-  { emoji: '🍋', name: 'Lemon', nova: 1, hint: 'Sour power', why: 'Fresh citrus fruit.' },
-  { emoji: '🫘', name: 'Lentils', nova: 1, hint: 'Dried legumes', why: 'Dried but nothing added — pure legume.' },
-  { emoji: '💧', name: 'Water', nova: 1, hint: 'The original drink', why: 'Zero processing, zero ingredients.' },
-  { emoji: '🫒', name: 'Olive Oil', nova: 2, hint: 'Pressed from olives', why: 'Extracted from a natural food — a cooking ingredient.' },
-  { emoji: '🧈', name: 'Butter', nova: 2, hint: 'Churned from cream', why: 'Made from cream + salt — a processed ingredient.' },
-  { emoji: '🧂', name: 'Salt', nova: 2, hint: 'Mined or evaporated', why: 'A pure cooking ingredient.' },
-  { emoji: '🍯', name: 'Honey', nova: 2, hint: 'Made by bees', why: 'Natural sweetener, used as an ingredient.' },
-  { emoji: '🌾', name: 'Flour', nova: 2, hint: 'Ground from wheat', why: 'Processed from grain — a baking ingredient.' },
-  { emoji: '🍋', name: 'Vinegar', nova: 2, hint: 'Fermented liquid', why: 'Used as a cooking ingredient, not eaten alone.' },
-  { emoji: '🧀', name: 'Cheese', nova: 3, hint: 'Milk + cultures + time', why: 'Real food (milk) + added ingredients (rennet, salt).' },
-  { emoji: '🍞', name: 'Bread', nova: 3, hint: 'Baked from flour', why: 'Made from flour, water, yeast, salt — simple processing.' },
-  { emoji: '🥫', name: 'Canned tomatoes', nova: 3, hint: 'Tomatoes in a can', why: 'Real food preserved with minimal additions.' },
-  { emoji: '🥓', name: 'Ham', nova: 3, hint: 'Cured meat', why: 'Meat + salt + curing — traditional processing.' },
-  { emoji: '🫙', name: 'Pickles', nova: 3, hint: 'Cucumbers in brine', why: 'Vegetables preserved in vinegar and salt.' },
-  { emoji: '🍷', name: 'Wine', nova: 3, hint: 'Fermented grapes', why: 'Processed from fruit through fermentation.' },
-  { emoji: '🥤', name: 'Coca-Cola', nova: 4, hint: 'The famous brown drink', why: 'High-fructose corn syrup, caramel color, phosphoric acid — pure factory.' },
-  { emoji: '🍟', name: 'Pringles', nova: 4, hint: 'Not really a potato chip', why: 'Dehydrated potato, wheat starch, emulsifiers, flavoring — industrial product.' },
-  { emoji: '🍬', name: 'Gummy bears', nova: 4, hint: 'Jiggly colorful sweets', why: 'Glucose syrup, sugar, gelatin, citric acid, colors, flavors.' },
-  { emoji: '🍫', name: 'Nutella', nova: 4, hint: 'Chocolate hazelnut spread', why: 'First ingredient is sugar, then palm oil — ultra-processed.' },
-  { emoji: '🍕', name: 'Frozen Pizza', nova: 4, hint: 'From the freezer aisle', why: 'Emulsifiers, stabilizers, flavoring, modified starches — NOVA 4.' },
-  { emoji: '🌭', name: 'Hot Dog', nova: 4, hint: 'Mystery meat tube', why: 'Mechanically separated meat, sodium nitrite, phosphates — factory food.' },
-  { emoji: '🥣', name: 'Frosties / Froot Loops', nova: 4, hint: 'Colorful breakfast', why: 'Sugar, corn flour, BHT preservative, artificial colors.' },
-  { emoji: '🍦', name: 'Fruit Yogurt', nova: 4, hint: 'Looks healthy...', why: 'Added sugar, modified starch, artificial flavors — not just yogurt + fruit.' },
-  { emoji: '🥤', name: 'Energy Drink', nova: 4, hint: 'Wings or not', why: 'Taurine, caffeine, sugar, artificial sweeteners, colors.' },
-  { emoji: '🧃', name: 'Capri-Sun', nova: 4, hint: 'Silver pouch drink', why: 'Water, sugar, citric acid, natural flavoring — ultra-processed.' },
-  { emoji: '🍩', name: 'Donut', nova: 4, hint: 'Ring-shaped sweet', why: 'Refined flour, sugar, hydrogenated fat, emulsifiers, artificial flavors.' },
-  { emoji: '🥫', name: 'Instant Noodles', nova: 4, hint: 'Just add water', why: 'Fried noodles, MSG, palm oil, sodium, flavor enhancers.' },
-  { emoji: '🍪', name: 'Oreos', nova: 4, hint: 'Twist, lick, dunk', why: 'Sugar, palm oil, high-fructose corn syrup, soy lecithin, artificial flavor.' },
-  { emoji: '🧁', name: 'Packaged Muffin', nova: 4, hint: 'From the convenience store', why: 'Emulsifiers, preservatives, modified starch, artificial flavors.' },
-  { emoji: '🥜', name: 'Honey-roasted Peanuts', nova: 4, hint: 'Sweet & crunchy coating', why: 'Sugar, cornstarch, honey powder, salt — coating makes it NOVA 4.' },
-  { emoji: '🧴', name: 'Ketchup', nova: 4, hint: 'Red squeeze bottle', why: 'Tomato concentrate, high-fructose corn syrup, corn syrup, vinegar — heavily processed.' },
+  { emoji: '\u{1F34C}', name: 'Banana', nova: 1, hint: 'Straight from the tree', why: 'A fresh fruit with nothing added.' },
+  { emoji: '\u{1F955}', name: 'Carrot', nova: 1, hint: 'Grows underground', why: 'A raw vegetable \u2014 as natural as it gets.' },
+  { emoji: '\u{1F95A}', name: 'Egg', nova: 1, hint: 'From the chicken', why: 'Minimally processed natural food.' },
+  { emoji: '\u{1F35A}', name: 'Rice', nova: 1, hint: 'A grain staple', why: 'Dried and packaged but nothing added.' },
+  { emoji: '\u{1F357}', name: 'Chicken breast', nova: 1, hint: 'Plain protein', why: 'Fresh meat, unprocessed.' },
+  { emoji: '\u{1F95B}', name: 'Milk', nova: 1, hint: 'From the cow', why: 'Pasteurized but nothing else added.' },
+  { emoji: '\u{1F34E}', name: 'Apple', nova: 1, hint: 'Pick it from a tree', why: 'Fresh fruit, no processing.' },
+  { emoji: '\u{1F95C}', name: 'Peanuts (plain)', nova: 1, hint: 'Roasted, no coating', why: 'Minimally processed \u2014 just roasted.' },
+  { emoji: '\u{1F954}', name: 'Potato', nova: 1, hint: 'Dig it up', why: 'A natural root vegetable.' },
+  { emoji: '\u{1F34B}', name: 'Lemon', nova: 1, hint: 'Sour power', why: 'Fresh citrus fruit.' },
+  { emoji: '\u{1FAD8}', name: 'Lentils', nova: 1, hint: 'Dried legumes', why: 'Dried but nothing added \u2014 pure legume.' },
+  { emoji: '\u{1F4A7}', name: 'Water', nova: 1, hint: 'The original drink', why: 'Zero processing, zero ingredients.' },
+  { emoji: '\u{1FAD2}', name: 'Olive Oil', nova: 2, hint: 'Pressed from olives', why: 'Extracted from a natural food \u2014 a cooking ingredient.' },
+  { emoji: '\u{1F9C8}', name: 'Butter', nova: 2, hint: 'Churned from cream', why: 'Made from cream + salt \u2014 a processed ingredient.' },
+  { emoji: '\u{1F9C2}', name: 'Salt', nova: 2, hint: 'Mined or evaporated', why: 'A pure cooking ingredient.' },
+  { emoji: '\u{1F36F}', name: 'Honey', nova: 2, hint: 'Made by bees', why: 'Natural sweetener, used as an ingredient.' },
+  { emoji: '\u{1F33E}', name: 'Flour', nova: 2, hint: 'Ground from wheat', why: 'Processed from grain \u2014 a baking ingredient.' },
+  { emoji: '\u{1F34B}', name: 'Vinegar', nova: 2, hint: 'Fermented liquid', why: 'Used as a cooking ingredient, not eaten alone.' },
+  { emoji: '\u{1F9C0}', name: 'Cheese', nova: 3, hint: 'Milk + cultures + time', why: 'Real food (milk) + added ingredients (rennet, salt).' },
+  { emoji: '\u{1F35E}', name: 'Bread', nova: 3, hint: 'Baked from flour', why: 'Made from flour, water, yeast, salt \u2014 simple processing.' },
+  { emoji: '\u{1F96B}', name: 'Canned tomatoes', nova: 3, hint: 'Tomatoes in a can', why: 'Real food preserved with minimal additions.' },
+  { emoji: '\u{1F953}', name: 'Ham', nova: 3, hint: 'Cured meat', why: 'Meat + salt + curing \u2014 traditional processing.' },
+  { emoji: '\u{1FAD9}', name: 'Pickles', nova: 3, hint: 'Cucumbers in brine', why: 'Vegetables preserved in vinegar and salt.' },
+  { emoji: '\u{1F377}', name: 'Wine', nova: 3, hint: 'Fermented grapes', why: 'Processed from fruit through fermentation.' },
+  { emoji: '\u{1F964}', name: 'Coca-Cola', nova: 4, hint: 'The famous brown drink', why: 'High-fructose corn syrup, caramel color, phosphoric acid \u2014 pure factory.' },
+  { emoji: '\u{1F35F}', name: 'Pringles', nova: 4, hint: 'Not really a potato chip', why: 'Dehydrated potato, wheat starch, emulsifiers, flavoring \u2014 industrial product.' },
+  { emoji: '\u{1F36C}', name: 'Gummy bears', nova: 4, hint: 'Jiggly colorful sweets', why: 'Glucose syrup, sugar, gelatin, citric acid, colors, flavors.' },
+  { emoji: '\u{1F36B}', name: 'Nutella', nova: 4, hint: 'Chocolate hazelnut spread', why: 'First ingredient is sugar, then palm oil \u2014 ultra-processed.' },
+  { emoji: '\u{1F355}', name: 'Frozen Pizza', nova: 4, hint: 'From the freezer aisle', why: 'Emulsifiers, stabilizers, flavoring, modified starches \u2014 NOVA 4.' },
+  { emoji: '\u{1F32D}', name: 'Hot Dog', nova: 4, hint: 'Mystery meat tube', why: 'Mechanically separated meat, sodium nitrite, phosphates \u2014 factory food.' },
+  { emoji: '\u{1F963}', name: 'Frosties / Froot Loops', nova: 4, hint: 'Colorful breakfast', why: 'Sugar, corn flour, BHT preservative, artificial colors.' },
+  { emoji: '\u{1F366}', name: 'Fruit Yogurt', nova: 4, hint: 'Looks healthy...', why: 'Added sugar, modified starch, artificial flavors \u2014 not just yogurt + fruit.' },
+  { emoji: '\u{1F964}', name: 'Energy Drink', nova: 4, hint: 'Wings or not', why: 'Taurine, caffeine, sugar, artificial sweeteners, colors.' },
+  { emoji: '\u{1F9C3}', name: 'Capri-Sun', nova: 4, hint: 'Silver pouch drink', why: 'Water, sugar, citric acid, natural flavoring \u2014 ultra-processed.' },
+  { emoji: '\u{1F369}', name: 'Donut', nova: 4, hint: 'Ring-shaped sweet', why: 'Refined flour, sugar, hydrogenated fat, emulsifiers, artificial flavors.' },
+  { emoji: '\u{1F96B}', name: 'Instant Noodles', nova: 4, hint: 'Just add water', why: 'Fried noodles, MSG, palm oil, sodium, flavor enhancers.' },
+  { emoji: '\u{1F36A}', name: 'Oreos', nova: 4, hint: 'Twist, lick, dunk', why: 'Sugar, palm oil, high-fructose corn syrup, soy lecithin, artificial flavor.' },
+  { emoji: '\u{1F9C1}', name: 'Packaged Muffin', nova: 4, hint: 'From the convenience store', why: 'Emulsifiers, preservatives, modified starch, artificial flavors.' },
+  { emoji: '\u{1F95C}', name: 'Honey-roasted Peanuts', nova: 4, hint: 'Sweet & crunchy coating', why: 'Sugar, cornstarch, honey powder, salt \u2014 coating makes it NOVA 4.' },
+  { emoji: '\u{1F9F4}', name: 'Ketchup', nova: 4, hint: 'Red squeeze bottle', why: 'Tomato concentrate, high-fructose corn syrup, corn syrup, vinegar \u2014 heavily processed.' },
 ];
 
 // ===== SCANNER DATABASE =====
 const scanDB = {};
 foods.forEach(f => { scanDB[f.name.toLowerCase()] = f; });
-// Add aliases
 const aliases = {
   'banana': 'banana', 'apple': 'apple', 'water': 'water', 'coke': 'coca-cola', 'cola': 'coca-cola',
   'chips': 'pringles', 'candy': 'gummy bears', 'pizza': 'frozen pizza', 'ice cream': 'fruit yogurt',
@@ -408,9 +818,15 @@ let state = {
   timerLeft: 100,
 };
 
+// Botanical confetti colors
+const botanicalColors = ['#4a7c59','#6a9e73','#f9a620','#b7472a','#22c55e','#f5f3ed'];
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Show/hide bg dots based on screen
+  const bg = document.getElementById('bgBotanical');
+  bg.style.display = (id === 'game' || id === 'scanner') ? 'none' : 'block';
 }
 
 // ===== START GAME =====
@@ -426,6 +842,7 @@ function startGame(mode) {
     showScreen('scanner');
     document.getElementById('scanResult').innerHTML = '';
     document.getElementById('scannerInput').value = '';
+    document.getElementById('scanAnimContainer').style.display = 'none';
     setTimeout(() => document.getElementById('scannerInput').focus(), 300);
     return;
   }
@@ -450,6 +867,9 @@ function startGame(mode) {
 }
 
 // ===== TEAM SETUP =====
+const teamColors = ['#4a7c59', '#f9a620', '#b7472a', '#9b7ec8'];
+const teamColorNames = ['Fern', 'Marigold', 'Terracotta', 'Lavender'];
+
 function addTeam() {
   const input = document.getElementById('teamNameInput');
   const name = input.value.trim();
@@ -462,9 +882,8 @@ function addTeam() {
 }
 
 function renderTeamPreview() {
-  const colors = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
   document.getElementById('setupTeamPreview').innerHTML = state.teams.map((t, i) =>
-    `<div class="team-card"><div class="team-name" style="color:${colors[i]}">${t.name}</div><div class="team-score">0</div></div>`
+    `<div class="team-card"><div class="team-name" style="color:${teamColors[i]}">${t.name}</div><div class="team-score" style="color:${teamColors[i]}">0</div></div>`
   ).join('');
 }
 
@@ -481,19 +900,17 @@ function startTeamGame() {
 }
 
 function updateTeamScores() {
-  const colors = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
   const maxScore = Math.max(...state.teams.map(t => t.score), 1);
   document.getElementById('gameTeamScores').innerHTML = state.teams.map((t, i) =>
     `<div class="team-card ${t.score === maxScore && t.score > 0 ? 'winning' : ''}">
-      <div class="team-name" style="color:${colors[i]}">${t.name}</div>
-      <div class="team-score">${t.score}</div>
+      <div class="team-name" style="color:${teamColors[i]}">${t.name}</div>
+      <div class="team-score" style="color:${teamColors[i]}">${t.score}</div>
     </div>`
   ).join('');
   if (state.teams.length > 0) {
-    const colors2 = ['#22c55e', '#60a5fa', '#facc15', '#a855f7'];
     document.getElementById('currentTeamLabel').innerHTML =
       `${state.teams[state.currentTeam].name}'s turn!`;
-    document.getElementById('currentTeamLabel').style.color = colors2[state.currentTeam];
+    document.getElementById('currentTeamLabel').style.color = teamColors[state.currentTeam];
   }
 }
 
@@ -517,13 +934,16 @@ function showFood() {
 
   // Reset card style
   const card = document.getElementById('foodCard');
-  card.style.borderColor = 'rgba(255,255,255,0.08)';
-  card.style.background = 'rgba(255,255,255,0.03)';
+  card.style.borderColor = 'rgba(74,124,89,0.2)';
+  card.style.background = 'rgba(74,124,89,0.08)';
+  card.style.animation = 'none';
+  card.offsetHeight; // reflow
+  card.style.animation = 'fadeUp 0.4s ease';
 
-  // Start timer
+  // Reset timer bar pulse
+  document.getElementById('timerBarContainer').classList.remove('pulsing');
+
   startTimer();
-
-  // Update streak
   updateStreak();
 }
 
@@ -532,20 +952,26 @@ function startTimer() {
   clearInterval(state.timerInterval);
   state.timerLeft = 100;
   const fill = document.getElementById('timerFill');
+  const bar = document.getElementById('timerBarContainer');
   fill.style.width = '100%';
   fill.className = 'timer-fill';
+  bar.classList.remove('pulsing');
 
   state.timerInterval = setInterval(() => {
     if (state.answered) { clearInterval(state.timerInterval); return; }
     state.timerLeft -= 1;
     fill.style.width = state.timerLeft + '%';
-    if (state.timerLeft <= 30) fill.className = 'timer-fill danger';
-    else if (state.timerLeft <= 60) fill.className = 'timer-fill warning';
+    if (state.timerLeft <= 30) {
+      fill.className = 'timer-fill danger';
+      bar.classList.add('pulsing');
+    } else if (state.timerLeft <= 60) {
+      fill.className = 'timer-fill warning';
+    }
     if (state.timerLeft <= 0) {
       clearInterval(state.timerInterval);
-      guess(-1); // Time's up
+      guess(-1);
     }
-  }, 100); // 10 seconds total
+  }, 100);
 }
 
 // ===== GUESS =====
@@ -553,15 +979,15 @@ function guess(novaGroup) {
   if (state.answered) return;
   state.answered = true;
   clearInterval(state.timerInterval);
+  document.getElementById('timerBarContainer').classList.remove('pulsing');
 
   const food = state.foods[state.current];
   const correct = novaGroup === food.nova;
   const timedOut = novaGroup === -1;
 
-  // Update score
   if (correct) {
-    const bonus = Math.ceil(state.timerLeft / 20); // Speed bonus
-    const streakBonus = Math.min(state.streak, 3); // Streak bonus (max +3)
+    const bonus = Math.ceil(state.timerLeft / 20);
+    const streakBonus = Math.min(state.streak, 3);
     const points = 1 + bonus + streakBonus;
     if (state.mode === 'teams') {
       state.teams[state.currentTeam].score += points;
@@ -574,25 +1000,27 @@ function guess(novaGroup) {
     state.streak = 0;
   }
 
-  // Visual feedback
+  // Visual feedback on card
   const card = document.getElementById('foodCard');
-  const novaColors = { 1: 'var(--nova1)', 2: 'var(--nova2)', 3: 'var(--nova3)', 4: 'var(--nova4)' };
-  card.style.borderColor = novaColors[food.nova];
-  card.style.background = [, 'var(--nova1-bg)', 'var(--nova2-bg)', 'var(--nova3-bg)', 'var(--nova4-bg)'][food.nova];
+  const novaColorVars = { 1: '#22c55e', 2: '#60a5fa', 3: '#facc15', 4: '#ef4444' };
+  const novaBgs = { 1: 'rgba(34,197,94,0.1)', 2: 'rgba(96,165,250,0.1)', 3: 'rgba(250,204,21,0.1)', 4: 'rgba(239,68,68,0.1)' };
+  card.style.borderColor = novaColorVars[food.nova];
+  card.style.background = novaBgs[food.nova];
 
-  // Disable buttons, highlight correct
+  // Disable buttons
   document.querySelectorAll('.nova-btn').forEach(b => b.classList.add('disabled'));
 
   // Feedback
   const area = document.getElementById('feedbackArea');
   if (timedOut) {
-    area.innerHTML = `<div class="feedback wrong">⏰ Time's up! It's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
+    area.innerHTML = `<div class="feedback wrong">\u23F0 Time's up! It's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
   } else if (correct) {
-    area.innerHTML = `<div class="feedback correct">✅ Correct! +${state.mode === 'teams' ? '' : (1 + Math.ceil(state.timerLeft/20) + Math.min(state.streak-1,3))} points<div class="explanation">${food.why}</div></div>`;
-    // Confetti
-    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: [novaColors[food.nova].replace('var(--nova'+food.nova+')',''), '#fff'], ticks: 40 });
+    const pts = 1 + Math.ceil(state.timerLeft/20) + Math.min(state.streak-1,3);
+    area.innerHTML = `<div class="feedback correct">\u{1F33F} Correct! +${state.mode === 'teams' ? '' : pts} points<div class="explanation">${food.why}</div></div>`;
+    // Botanical confetti
+    confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 }, colors: botanicalColors, ticks: 50 });
   } else {
-    area.innerHTML = `<div class="feedback wrong">❌ Nope — it's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
+    area.innerHTML = `<div class="feedback wrong">Nope \u2014 it's <strong>NOVA ${food.nova}</strong><div class="explanation">${food.why}</div></div>`;
   }
 
   document.getElementById('nextBtn').style.display = 'inline-block';
@@ -604,7 +1032,7 @@ function guess(novaGroup) {
 function updateStreak() {
   const el = document.getElementById('streakDisplay');
   if (state.streak >= 2) {
-    el.textContent = '🔥 ' + state.streak + ' streak!';
+    el.textContent = '\u{1F525} ' + state.streak + ' streak!';
   } else {
     el.textContent = '';
   }
@@ -627,42 +1055,43 @@ function endGame() {
   if (state.mode === 'teams') {
     const sorted = [...state.teams].sort((a, b) => b.score - a.score);
     const winner = sorted[0];
-    document.getElementById('resultsTitle').textContent = `${winner.name} wins! 🏆`;
-    const colors = { [state.teams[0]?.name]: '#22c55e', [state.teams[1]?.name]: '#60a5fa', [state.teams[2]?.name]: '#facc15', [state.teams[3]?.name]: '#a855f7' };
+    document.getElementById('resultsTitle').textContent = `${winner.name} wins!`;
     document.getElementById('resultsContent').innerHTML = `
       <div class="team-scores" style="margin:20px 0;">
-        ${sorted.map((t, i) => `
+        ${sorted.map((t, i) => {
+          const origIdx = state.teams.indexOf(t);
+          return `
           <div class="team-card ${i === 0 ? 'winning' : ''}">
-            <div class="team-name">${i === 0 ? '👑 ' : ''}${t.name}</div>
-            <div class="team-score">${t.score}</div>
-          </div>
-        `).join('')}
+            <div class="team-name" style="color:${teamColors[origIdx]}">${i === 0 ? '\u{1F451} ' : ''}${t.name}</div>
+            <div class="team-score" style="color:${teamColors[origIdx]}">${t.score}</div>
+          </div>`;
+        }).join('')}
       </div>
-      <p style="color:#888; margin-top:10px;">Great teamwork everyone!</p>
+      <p style="color:#888; margin-top:10px; font-family:'Caveat',cursive; font-size:1.2em;">Great teamwork everyone!</p>
     `;
   } else {
     const total = state.foods.length;
     const pct = Math.round((state.score / (total * 5)) * 100);
     let grade, gradeClass, emoji;
-    if (pct >= 80) { grade = 'NOVA Expert! 🧑‍🔬'; gradeClass = 'grade-s'; emoji = '🏆'; }
-    else if (pct >= 60) { grade = 'Food Detective 🔍'; gradeClass = 'grade-a'; emoji = '🥈'; }
-    else if (pct >= 40) { grade = 'Learning Fast 📚'; gradeClass = 'grade-b'; emoji = '🥉'; }
-    else { grade = 'Keep Practicing! 💪'; gradeClass = 'grade-c'; emoji = '💪'; }
+    if (pct >= 80) { grade = 'NOVA Expert! \u{1F9D1}\u200D\u{1F52C}'; gradeClass = 'grade-s'; emoji = '\u{1F3C6}'; }
+    else if (pct >= 60) { grade = 'Food Detective \u{1F50D}'; gradeClass = 'grade-a'; emoji = '\u{1F948}'; }
+    else if (pct >= 40) { grade = 'Learning Fast \u{1F4DA}'; gradeClass = 'grade-b'; emoji = '\u{1F949}'; }
+    else { grade = 'Keep Practicing! \u{1F4AA}'; gradeClass = 'grade-c'; emoji = '\u{1F4AA}'; }
 
     document.getElementById('resultsTitle').innerHTML = `${emoji} Game Over!`;
     document.getElementById('resultsContent').innerHTML = `
       <div class="result-grade ${gradeClass}">${grade}</div>
       <div class="result-stats">
-        <div class="result-stat"><span class="number" style="color:var(--nova1);">${state.score}</span><span class="label">Points</span></div>
-        <div class="result-stat"><span class="number" style="color:var(--nova2);">${state.maxStreak}</span><span class="label">Best Streak</span></div>
-        <div class="result-stat"><span class="number" style="color:var(--nova3);">${total}</span><span class="label">Foods</span></div>
+        <div class="result-stat"><span class="number" style="color:var(--fern);">${state.score}</span><span class="label">Points</span></div>
+        <div class="result-stat"><span class="number" style="color:var(--marigold);">${state.maxStreak}</span><span class="label">Best Streak</span></div>
+        <div class="result-stat"><span class="number" style="color:var(--terracotta);">${total}</span><span class="label">Foods</span></div>
       </div>
     `;
   }
 
-  // Big confetti
+  // Botanical confetti burst
   setTimeout(() => {
-    confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#22c55e', '#60a5fa', '#facc15', '#a855f7'] });
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: botanicalColors });
   }, 300);
 }
 
@@ -671,40 +1100,51 @@ function scanFood() {
   const input = document.getElementById('scannerInput').value.trim().toLowerCase();
   if (!input) return;
   const resultDiv = document.getElementById('scanResult');
+  const animDiv = document.getElementById('scanAnimContainer');
 
-  let food = scanDB[input];
-  if (!food && aliases[input]) food = scanDB[aliases[input]];
+  // Show scan animation
+  resultDiv.innerHTML = '';
+  animDiv.style.display = 'flex';
+  animDiv.style.justifyContent = 'center';
 
-  if (!food) {
-    // Try partial match
-    const partial = Object.keys(scanDB).find(k => k.includes(input) || input.includes(k));
-    if (partial) food = scanDB[partial];
-    const partialAlias = Object.keys(aliases).find(k => k.includes(input) || input.includes(k));
-    if (!food && partialAlias) food = scanDB[aliases[partialAlias]];
-  }
+  // Delay result to show scanning animation
+  setTimeout(() => {
+    animDiv.style.display = 'none';
 
-  if (food) {
-    const colors = { 1: 'var(--nova1)', 2: 'var(--nova2)', 3: 'var(--nova3)', 4: 'var(--nova4)' };
-    const bgs = { 1: 'var(--nova1-bg)', 2: 'var(--nova2-bg)', 3: 'var(--nova3-bg)', 4: 'var(--nova4-bg)' };
-    const labels = { 1: 'Unprocessed', 2: 'Ingredient', 3: 'Processed', 4: 'Ultra-processed' };
-    resultDiv.innerHTML = `
-      <div class="scan-result" style="background:${bgs[food.nova]}; border:2px solid ${colors[food.nova]};">
-        <p style="font-size:3em;">${food.emoji}</p>
-        <h3 style="color:${colors[food.nova]};">${food.name}</h3>
-        <div class="nova-badge" style="background:rgba(255,255,255,0.1); color:${colors[food.nova]};">NOVA ${food.nova} — ${labels[food.nova]}</div>
-        <p style="margin-top:12px;">${food.why}</p>
-      </div>
-    `;
-    confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 }, colors: [colors[food.nova].replace(/var\(--nova\d\)/, '#22c55e')], ticks: 40 });
-  } else {
-    resultDiv.innerHTML = `
-      <div class="scan-result" style="background:rgba(255,255,255,0.04); border:2px solid rgba(255,255,255,0.15);">
-        <p style="font-size:2em;">🤷</p>
-        <h3>Not in our database yet!</h3>
-        <p>Try: banana, pizza, cheese, coca-cola, nutella, bread, chips...</p>
-      </div>
-    `;
-  }
+    let food = scanDB[input];
+    if (!food && aliases[input]) food = scanDB[aliases[input]];
+
+    if (!food) {
+      const partial = Object.keys(scanDB).find(k => k.includes(input) || input.includes(k));
+      if (partial) food = scanDB[partial];
+      const partialAlias = Object.keys(aliases).find(k => k.includes(input) || input.includes(k));
+      if (!food && partialAlias) food = scanDB[aliases[partialAlias]];
+    }
+
+    if (food) {
+      const colors = { 1: '#22c55e', 2: '#60a5fa', 3: '#facc15', 4: '#ef4444' };
+      const bgs = { 1: 'rgba(34,197,94,0.1)', 2: 'rgba(96,165,250,0.1)', 3: 'rgba(250,204,21,0.1)', 4: 'rgba(239,68,68,0.1)' };
+      const labels = { 1: 'Unprocessed', 2: 'Ingredient', 3: 'Processed', 4: 'Ultra-processed' };
+      resultDiv.innerHTML = `
+        <div class="scan-result" style="background:${bgs[food.nova]}; border:1.5px solid ${colors[food.nova]};">
+          <p style="font-size:3em;">${food.emoji}</p>
+          <h3 style="color:${colors[food.nova]};">${food.name}</h3>
+          <div class="nova-badge" style="background:rgba(255,255,255,0.06); color:${colors[food.nova]};">NOVA ${food.nova} \u2014 ${labels[food.nova]}</div>
+          <p style="margin-top:12px;">${food.why}</p>
+        </div>
+      `;
+      confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 }, colors: botanicalColors, ticks: 45 });
+    } else {
+      resultDiv.innerHTML = `
+        <div class="scan-result" style="background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.12);">
+          <p style="font-size:2em;">\u{1F33F}</p>
+          <h3 style="color:rgba(255,255,255,0.7);">Not in our database yet!</h3>
+          <p>Try: banana, pizza, cheese, coca-cola, nutella, bread, chips...</p>
+        </div>
+      `;
+    }
+  }, 900);
+
   document.getElementById('scannerInput').value = '';
   document.getElementById('scannerInput').focus();
 }
