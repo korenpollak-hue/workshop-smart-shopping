@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What If the Solution Lies in the Body?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fern: #4a7c59;
+    --fern-light: #6ba37a;
+    --marigold: #f9a620;
+    --terracotta: #b7472a;
+    --cream: #f5f3ed;
+    --cream-dark: #e8e4db;
+    --dark: #1a2e1f;
+    --dark2: #0f1a12;
+  }
+
+  .reveal { font-family: 'DM Sans', sans-serif; }
+  .reveal h1 { font-family: 'Playfair Display', serif; font-size: 3.2em; font-weight: 900; text-transform: none; letter-spacing: -0.03em; line-height: 1.1; }
+  .reveal h2 { font-family: 'Playfair Display', serif; font-size: 2.2em; font-weight: 700; text-transform: none; letter-spacing: -0.02em; }
+  .reveal h3 { font-family: 'DM Sans', sans-serif; font-size: 1.3em; font-weight: 700; text-transform: none; }
+  .reveal p { font-size: 1.05em; line-height: 1.6; }
+  .reveal section { padding: 40px; }
+  .reveal .handwritten { font-family: 'Caveat', cursive; }
+  .reveal ul { text-align: left; }
+  .reveal li { margin-bottom: 0.4em; }
+
+  /* Slide backgrounds */
+  .slide-cream { background: var(--cream); color: #2a2a2a; }
+  .slide-cream h1, .slide-cream h2 { color: var(--fern); }
+  .slide-cream h3 { color: var(--terracotta); }
+
+  .slide-dark { background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%); color: var(--cream); }
+  .slide-dark h1, .slide-dark h2 { color: var(--marigold); }
+
+  .slide-fern { background: linear-gradient(135deg, #2d5a3a 0%, var(--fern) 100%); color: white; }
+  .slide-fern h2 { color: var(--marigold); }
+
+  .slide-terracotta { background: linear-gradient(135deg, #8a3520 0%, var(--terracotta) 100%); color: white; }
+  .slide-terracotta h2 { color: #fde8d0; }
+
+  .slide-aurora { background: linear-gradient(135deg, var(--dark) 0%, #1a3a2e 30%, var(--dark2) 60%, #2a1a0a 100%); color: var(--cream); }
+  .slide-aurora h2 { color: var(--marigold); }
+
+  .slide-gradient { background: linear-gradient(135deg, #f5f3ed 0%, #e8f0e4 50%, #fef3e0 100%); color: #2a2a2a; }
+  .slide-gradient h2 { color: var(--fern); }
+
+  /* Cards */
+  .clay-card {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 8px 8px 16px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(0,0,0,0.05), inset 4px 4px 8px rgba(255,255,255,0.8);
+    color: #2a2a2a;
+    margin: 10px;
+  }
+
+  .glass-card {
+    background: rgba(74, 124, 89, 0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 10px;
+  }
+
+  .glass-card-dark {
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 10px;
+  }
+
+  /* Accent boxes */
+  .accent-box {
+    border-left: 4px solid var(--marigold);
+    padding: 16px 20px;
+    background: rgba(249, 166, 32, 0.1);
+    border-radius: 0 12px 12px 0;
+    margin: 16px 0;
+    text-align: left;
+  }
+
+  .source {
+    font-size: 0.55em;
+    opacity: 0.6;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  .emoji-big { font-size: 3em; margin-bottom: 10px; }
+
+  .two-col { display: flex; gap: 24px; align-items: stretch; }
+  .two-col > div { flex: 1; }
+
+  .three-col { display: flex; gap: 16px; }
+  .three-col > div { flex: 1; }
+
+  /* Dopamine diagram */
+  .dopamine-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin: 8px 0;
+    font-size: 0.85em;
+  }
+  .dopamine-label { width: 180px; font-weight: 700; text-align: left; }
+  .dopamine-bars { flex: 1; display: flex; gap: 8px; align-items: center; }
+  .bar-craving { background: var(--terracotta); height: 28px; border-radius: 6px; transition: width 0.5s; }
+  .bar-dopamine { background: var(--fern); height: 28px; border-radius: 6px; transition: width 0.5s; }
+  .multiplier { font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--marigold); font-weight: 700; }
+
+  /* Cycle diagram */
+  .cycle-step {
+    background: rgba(183, 71, 42, 0.15);
+    border: 2px solid var(--terracotta);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 10px;
+  }
+  .cycle-arrow { font-size: 1.5em; color: var(--marigold); }
+
+  /* Brain table */
+  .brain-table { font-size: 0.6em; width: 100%; border-collapse: collapse; }
+  .brain-table th { background: var(--fern); color: white; padding: 6px 10px; text-align: left; }
+  .brain-table td { padding: 5px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .brain-table tr:nth-child(even) { background: rgba(255,255,255,0.05); }
+
+  /* Calorie comparison */
+  .calorie-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 16px;
+    min-width: 140px;
+  }
+  .calorie-card .food-emoji { font-size: 2.5em; }
+  .calorie-card .gross { font-size: 1.4em; font-weight: 700; }
+  .calorie-card .net { font-size: 1.2em; color: var(--fern); font-weight: 700; }
+  .calorie-card .arrow-down { font-size: 1.2em; color: var(--marigold); }
+
+  /* Stats */
+  .stat-number { font-family: 'Playfair Display', serif; font-size: 3em; font-weight: 900; color: var(--marigold); }
+  .stat-label { font-size: 0.9em; opacity: 0.8; }
+
+  /* SVG leaf decoration */
+  .leaf-decoration {
+    position: absolute;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+
+  /* Highlight text */
+  .highlight-marigold { color: var(--marigold); font-weight: 700; }
+  .highlight-terracotta { color: var(--terracotta); font-weight: 700; }
+  .highlight-fern { color: var(--fern); font-weight: 700; }
+
+  /* Country flags */
+  .country-row { display: flex; align-items: center; gap: 12px; margin: 6px 0; font-size: 0.9em; }
+  .country-bar { height: 24px; border-radius: 6px; background: var(--terracotta); transition: width 0.5s; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- SLIDE 1: Title -->
+<section data-background-color="#1a2e1f" data-transition="zoom">
+  <div style="margin-bottom: 30px;">
+    <span style="font-size: 5em;">🧠</span>
+  </div>
+  <h1 style="color: var(--cream); font-size: 2.8em;">What If the Solution<br><span style="color: var(--marigold);">Lies in the Body?</span></h1>
+  <p class="handwritten" style="font-size: 1.6em; color: var(--fern-light); margin-top: 20px;">The Truth About Sugar, Brain &amp; Health</p>
+</section>
+
+<!-- SLIDE 2: Fidgety Philip -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Fidgety Philip</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto;">
+    <p style="font-size: 1.3em; font-style: italic; color: #555;">"Will Philip sit still today<br>at the dinner table, I pray?"</p>
+    <p style="font-size: 0.85em; margin-top: 16px; color: #777;">— "Struwwelpeter" by Heinrich Hoffmann, 1845</p>
+  </div>
+  <div class="fragment">
+    <div class="accent-box" style="max-width: 700px; margin: 20px auto;">
+      <p><strong>Important for destigmatization:</strong><br>
+      ADHD symptoms are <em>not</em> a "new" phenomenon.<br>
+      Historical description in "Struwwelpeter" from <span class="highlight-marigold">1845</span>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: Marshmallow Experiment -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">The Marshmallow Experiment:<br>Revisited</h2>
+  <div class="two-col" style="margin-top: 30px;">
+    <div class="glass-card">
+      <h3 style="color: var(--terracotta);">Old View</h3>
+      <p style="font-size: 1.1em;">Willpower is the key to success.</p>
+      <p class="emoji-big">💪</p>
+    </div>
+    <div class="glass-card fragment">
+      <h3 style="color: var(--fern-light);">New View (2018)</h3>
+      <p style="font-size: 1.1em;">Socioeconomic environment is decisive.</p>
+      <p class="emoji-big">🏠</p>
+    </div>
+  </div>
+  <div class="fragment accent-box" style="margin-top: 20px;">
+    <p>The environment explains later success <strong>better</strong> than the mere ability to wait.</p>
+  </div>
+  <p class="source">Watts, T. W., Duncan, G. J., & Quan, H. (2018). Revisiting the Marshmallow Test. Psychological Science.</p>
+</section>
+
+<!-- SLIDE 4: The ADHD Brain -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">The ADHD Brain</h2>
+  <p style="color: #555;">🔴 Red → <strong>Underactive</strong> areas</p>
+  <div class="two-col" style="margin-top: 16px;">
+    <div class="clay-card" style="font-size: 0.75em;">
+      <h3 style="color: var(--terracotta);">Part A — Inhibition</h3>
+      <table class="brain-table" style="color: #333;">
+        <tr><th>Region</th><th>Function</th></tr>
+        <tr><td>Right IFC</td><td>Impulse control ↓</td></tr>
+        <tr><td>Insula</td><td>Emotion & body awareness ↓</td></tr>
+        <tr><td>SMA</td><td>Movement planning ↓</td></tr>
+        <tr><td>ACC</td><td>Conflict control, error monitoring ↓</td></tr>
+        <tr><td>Left Caudate & Putamen</td><td>Motor control & impulse inhibition ↓</td></tr>
+        <tr><td>Right Thalamus</td><td>Stimulus filtering ↓</td></tr>
+      </table>
+    </div>
+    <div class="clay-card fragment" style="font-size: 0.75em;">
+      <h3 style="color: var(--terracotta);">Part B — Attention</h3>
+      <table class="brain-table" style="color: #333;">
+        <tr><th>Region</th><th>Function</th></tr>
+        <tr><td>Right DLPFC</td><td>Focus, executive functions ↓</td></tr>
+        <tr><td>Left Putamen</td><td>Attention & motivation ↓</td></tr>
+        <tr><td>Pulvinar</td><td>Visual stimulus processing ↓</td></tr>
+        <tr><td>Right Parietal Lobe</td><td>Spatial orientation ↓</td></tr>
+        <tr><td>Precuneus</td><td>Self-focus, visual orientation ↓</td></tr>
+        <tr><td style="color: var(--fern);">Left Cuneus 🔵</td><td style="color: var(--fern);">Visual cortex ↑ <strong>Increased</strong></td></tr>
+        <tr><td style="color: var(--fern);">Right Cerebellum 🔵</td><td style="color: var(--fern);">Attention, sense of time ↑</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="source" style="color: #888;">Hart H, Radua J, Nakao T, et al. Meta-analysis of fMRI. JAMA Psychiatry, 2013;70(2)</p>
+</section>
+
+<!-- SLIDE 5: Effect of Medication -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Effect of Stimulant Medication</h2>
+  <div style="margin-top: 20px;">
+    <p style="color: var(--cream);">🔴 Red → <strong>Active (restored)</strong> areas after medication</p>
+  </div>
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="glass-card">
+      <p>✅ Working memory, control, decision-making</p>
+    </div>
+    <div class="glass-card">
+      <p>✅ Stimulus inhibition, language processing</p>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top: 10px;">
+    <div class="glass-card">
+      <p>✅ Social thinking, self-reference</p>
+    </div>
+    <div class="glass-card">
+      <p>✅ Abstraction, metacognition, planning</p>
+    </div>
+  </div>
+  <p class="source">Rubia K, et al. Effects of stimulants on brain function in ADHD. Biol Psychiatry, 2014.</p>
+</section>
+
+<!-- SLIDE 6: Emotional Regulation -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Emotional Dysregulation in ADHD</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto;">
+    <p>Irritable adolescents with ADHD show <span class="highlight-terracotta">atypical brain networks</span> affecting both emotion (threat/reward) and control.</p>
+    <div style="display: flex; gap: 16px; margin-top: 20px;">
+      <div style="flex:1; text-align:center; padding: 12px; background: rgba(183,71,42,0.1); border-radius: 12px;">
+        <p>⚡ Dealing with<br><strong>absent rewards</strong></p>
+      </div>
+      <div style="flex:1; text-align:center; padding: 12px; background: rgba(249,166,32,0.1); border-radius: 12px;">
+        <p>😤 <strong>Frustration</strong><br>tolerance</p>
+      </div>
+      <div style="flex:1; text-align:center; padding: 12px; background: rgba(74,124,89,0.1); border-radius: 12px;">
+        <p>🧘 Regulation of<br><strong>emotional impulses</strong></p>
+      </div>
+    </div>
+  </div>
+  <p class="source" style="color: #888;">Bleich-Cohen M, et al. fMRI investigation of prefrontal cortex TMS efficacy in adults with ADHD. NeuroImage Clin, 2021.</p>
+</section>
+
+<!-- SLIDE 7: Default Mode Network -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Default Mode Network (DMN)</h2>
+  <div class="glass-card" style="max-width: 600px; margin: 20px auto; text-align: center;">
+    <p class="emoji-big">🌀</p>
+    <h3 style="color: var(--cream);">Mind Wandering</h3>
+    <p>The posterior cingulate (part of the DMN) remains active during tasks in ADHD — causing <span class="highlight-marigold">difficulty focusing</span> and <span class="highlight-marigold">time blindness</span>.</p>
+  </div>
+  <div class="fragment glass-card" style="max-width: 600px; margin: 20px auto;">
+    <p>In neurotypical brains, the DMN <strong>deactivates</strong> during tasks.<br>In ADHD brains, it <strong>stays on</strong> — competing with attention networks.</p>
+  </div>
+  <p class="source">McCormick, E.M., Telzer, E.H. (2018). Contributions of DMN stability to adolescent task engagement. Sci Rep 8.</p>
+</section>
+
+<!-- SLIDE 8: Sugar & Basal Ganglia -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Sugar &amp; the Basal Ganglia</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto; text-align: center;">
+    <p class="emoji-big">🍬 → 🧠</p>
+    <h3 style="color: var(--terracotta);">Effect of increased sugar intake<br>on the basal ganglia after just 5 days</h3>
+    <p style="margin-top: 16px;">🔴 Red → <strong>Active</strong> (overstimulated reward circuits)</p>
+  </div>
+  <div class="fragment clay-card" style="max-width: 700px; margin: 20px auto; text-align: center;">
+    <p><span class="highlight-terracotta">Liver fat increased by 45% in just 5 days</span></p>
+  </div>
+</section>
+
+<!-- SLIDE 9: Dopamine Dilemma - Build up -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">The Dopamine Dilemma</h2>
+  <div style="max-width: 750px; margin: 20px auto;">
+
+    <div class="dopamine-row" style="background: rgba(74,124,89,0.2);">
+      <div class="dopamine-label">🧠 Neurotypical</div>
+      <div class="dopamine-bars">
+        <div>
+          <small style="color: var(--terracotta);">Craving</small>
+          <div class="bar-craving" style="width: 100px;"></div>
+        </div>
+        <div>
+          <small style="color: var(--fern-light);">Dopamine</small>
+          <div class="bar-dopamine" style="width: 100px;"></div>
+        </div>
+      </div>
+      <div class="multiplier">×1</div>
+    </div>
+
+    <div class="dopamine-row fragment" style="background: rgba(249,166,32,0.15);">
+      <div class="dopamine-label">⚡ ADHD (neutral)</div>
+      <div class="dopamine-bars">
+        <div>
+          <small style="color: var(--terracotta);">Craving</small>
+          <div class="bar-craving" style="width: 200px;"></div>
+        </div>
+        <div>
+          <small style="color: var(--fern-light);">Dopamine</small>
+          <div class="bar-dopamine" style="width: 50px;"></div>
+        </div>
+      </div>
+      <div class="multiplier">×4</div>
+    </div>
+
+    <div class="dopamine-row fragment" style="background: rgba(183,71,42,0.2);">
+      <div class="dopamine-label">😰 ADHD (stressed)</div>
+      <div class="dopamine-bars">
+        <div>
+          <small style="color: var(--terracotta);">Craving</small>
+          <div class="bar-craving" style="width: 400px;"></div>
+        </div>
+        <div>
+          <small style="color: var(--fern-light);">Dopamine</small>
+          <div class="bar-dopamine" style="width: 50px;"></div>
+        </div>
+      </div>
+      <div class="multiplier">×8</div>
+    </div>
+
+    <div class="dopamine-row fragment" style="background: rgba(183,71,42,0.4);">
+      <div class="dopamine-label" style="font-size: 0.8em;">🔥 ADHD (stressed &amp; overweight)</div>
+      <div class="dopamine-bars">
+        <div>
+          <small style="color: var(--terracotta);">Craving</small>
+          <div class="bar-craving" style="width: 600px;"></div>
+        </div>
+        <div>
+          <small style="color: var(--fern-light);">Dopamine</small>
+          <div class="bar-dopamine" style="width: 50px;"></div>
+        </div>
+      </div>
+      <div class="multiplier">×16</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: Vicious Cycle -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">The Vicious Cycle</h2>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; max-width: 700px; margin: 20px auto;">
+    <div class="cycle-step" style="background: rgba(183,71,42,0.1);">Less<br>satisfaction</div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step" style="background: rgba(183,71,42,0.15);">Eat<br>more</div>
+    <div class="cycle-arrow">→</div>
+    <div class="cycle-step" style="background: rgba(183,71,42,0.2);">More visceral<br>fat cells</div>
+    <div class="cycle-arrow">↓</div>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; max-width: 700px; margin: 10px auto;">
+    <div class="cycle-step" style="background: rgba(249,166,32,0.2);">Stronger<br>craving</div>
+    <div class="cycle-arrow">←</div>
+    <div class="cycle-step" style="background: rgba(249,166,32,0.15);">Stress<br>(cortisol)</div>
+    <div class="cycle-arrow">←</div>
+    <div class="cycle-step" style="background: rgba(183,71,42,0.25);">Inflammation<br>(IL-6)</div>
+  </div>
+  <div class="fragment accent-box" style="max-width: 700px; margin: 20px auto; font-size: 0.85em;">
+    <p>↓ BDNF · ↑ Insulin resistance · Sensitive Amygdala → Emotional dysregulation<br>
+    ↑ Dopamine-reinforced behavior · ↑ Cortisol</p>
+  </div>
+</section>
+
+<!-- SLIDE 11: What Can We Do? -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">What Can We Do?</h2>
+  <div style="max-width: 700px; margin: 20px auto; text-align: left;">
+    <div class="glass-card" style="margin-bottom: 12px;">
+      <p>🍽️ <strong>Eat mindfully</strong> (without distractions)</p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>🏃 <strong>Regulate emotions</strong> through exercise or journaling</p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>⏱️ <strong>Increase the gap</strong> between impulse and eating</p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>📦 <strong>Put logistics first</strong> — no packaged unhealthy snacks at home</p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>👩‍🍳 <strong>Unhealthy food is made, not bought</strong></p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>🍲 <strong>"Food Baby" principle:</strong> warm, nutritious meals</p>
+    </div>
+    <div class="glass-card fragment">
+      <p>🏋️ <strong>Regular exercise</strong> (sports)</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: Insulin -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Insulin — The Key</h2>
+  <div class="clay-card" style="max-width: 650px; margin: 20px auto; text-align: center;">
+    <p class="emoji-big">🔑</p>
+    <ul style="font-size: 1.1em;">
+      <li class="fragment">Insulin is the <strong>"key"</strong> for sugar uptake into cells</li>
+      <li class="fragment">It regulates blood sugar levels after eating</li>
+      <li class="fragment">It promotes <strong>storage of excess energy as fat</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- SLIDE 13: Cause or Causality -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Cause or Causality?</h2>
+  <div class="glass-card" style="max-width: 600px; margin: 40px auto; text-align: center;">
+    <p style="font-size: 1.2em;">Does sugar <em>cause</em> these problems?<br>Or are they merely <em>correlated</em>?</p>
+    <p class="fragment" style="margin-top: 20px; font-size: 1.1em; color: var(--marigold);">The science is increasingly clear:<br>it's <strong>not</strong> just correlation.</p>
+  </div>
+  <p class="source">DiNicolantonio, J. J., et al. (2018). Fructose-induced inflammation and increased cortisol. Progress in Cardiovascular Diseases.</p>
+</section>
+
+<!-- SLIDE 14: Childhood Obesity -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Childhood Obesity Worldwide</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto;">
+    <p style="text-align: center; margin-bottom: 16px;">Overweight already in childhood (ages 5-19)</p>
+    <div style="font-size: 0.9em;">
+      <div class="country-row"><span style="width:40px;">🇪🇸</span><span style="width: 100px;">Spain</span><div class="country-bar" style="width: 296px;"></div><strong>14.8%</strong></div>
+      <div class="country-row"><span style="width:40px;">🇺🇸</span><span style="width: 100px;">USA</span><div class="country-bar" style="width: 220px;"></div><strong>11.0%</strong></div>
+      <div class="country-row"><span style="width:40px;">🇨🇳</span><span style="width: 100px;">China</span><div class="country-bar" style="width: 200px;"></div><strong>10.0%</strong></div>
+      <div class="country-row"><span style="width:40px;">🇩🇪</span><span style="width: 100px;">Germany</span><div class="country-bar" style="width: 200px;"></div><strong>10.0%</strong></div>
+      <div class="country-row"><span style="width:40px;">🇫🇷</span><span style="width: 100px;">France</span><div class="country-bar" style="width: 172px;"></div><strong>8.6%</strong></div>
+      <div class="country-row"><span style="width:40px;">🇯🇵</span><span style="width: 100px;">Japan</span><div class="country-bar" style="width: 140px;"></div><strong>7.0%</strong></div>
+    </div>
+  </div>
+  <p class="source" style="color:#888;">WHO Global Health Observatory, 2022 · IDF Diabetes Atlas 2021</p>
+</section>
+
+<!-- SLIDE 15: Global Diabetes Rise -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Global Rise of Type 2 Diabetes</h2>
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="glass-card" style="text-align: center;">
+      <p>🇪🇸 Spain</p>
+      <p class="stat-number">14.8%</p>
+    </div>
+    <div class="glass-card" style="text-align: center;">
+      <p>🇺🇸 USA</p>
+      <p class="stat-number">11.0%</p>
+    </div>
+    <div class="glass-card" style="text-align: center;">
+      <p>🇩🇪 Germany</p>
+      <p class="stat-number">10.0%</p>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top: 10px;">
+    <div class="glass-card" style="text-align: center;">
+      <p>🇫🇷 France</p>
+      <p class="stat-number" style="font-size:2em;">8.6%</p>
+    </div>
+    <div class="glass-card" style="text-align: center;">
+      <p>🇯🇵 Japan</p>
+      <p class="stat-number" style="font-size:2em;">7.0%</p>
+    </div>
+  </div>
+  <p class="source">CDC Diabetes Statistics Report 2022 · IDF Diabetes Atlas 2021</p>
+</section>
+
+<!-- SLIDE 16: Calorie Paradox -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">The Calorie Paradox: Gross vs. Net</h2>
+  <div class="accent-box" style="max-width: 700px; margin: 16px auto;">
+    <p><strong>Not every calorie you eat gets absorbed.</strong><br>
+    Protein digestion costs the most energy ("thermic effect").<br>
+    Fiber blocks part of calorie absorption.</p>
+  </div>
+  <div class="three-col" style="margin-top: 20px;">
+    <div class="clay-card calorie-card">
+      <div class="food-emoji">🥜</div>
+      <p><strong>Almonds</strong></p>
+      <p class="gross">170 kcal</p>
+      <p class="arrow-down fragment">↓</p>
+      <p class="net fragment">130 kcal</p>
+    </div>
+    <div class="clay-card calorie-card">
+      <div class="food-emoji">🥩</div>
+      <p><strong>Steak</strong></p>
+      <p class="gross">170 kcal</p>
+      <p class="arrow-down fragment">↓</p>
+      <p class="net fragment">130 kcal</p>
+    </div>
+    <div class="clay-card calorie-card">
+      <div class="food-emoji">🍞</div>
+      <p><strong>White Bread</strong></p>
+      <p class="gross">170 kcal</p>
+      <p class="arrow-down fragment">↓</p>
+      <p class="net fragment" style="color: var(--terracotta);">165 kcal</p>
+    </div>
+  </div>
+  <p class="source" style="color:#888;">Novotny, J. A., et al. (2012). Discrepancy between Atwater factor predicted and empirically measured energy values. AJCN.</p>
+</section>
+
+<!-- SLIDE 17: Blood Sugar Rollercoaster -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">The Blood Sugar Rollercoaster</h2>
+  <div class="glass-card" style="max-width: 700px; margin: 30px auto;">
+    <ul style="font-size: 1.05em;">
+      <li class="fragment">Fast sugar leads to blood sugar <span class="highlight-terracotta">spikes and crashes</span></li>
+      <li class="fragment">This "rollercoaster" causes <strong>cravings</strong> and <strong>concentration problems</strong></li>
+      <li class="fragment"><span class="highlight-fern" style="color: var(--fern-light);">Fiber</span> slows sugar absorption and <strong>stabilizes</strong> blood sugar</li>
+    </ul>
+  </div>
+  <p class="source">Ludwig, D. S. (2002). The glycemic index: physiological mechanisms. JAMA.</p>
+</section>
+
+<!-- SLIDE 18: Daily Sugar Intake -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Daily Sugar Consumption</h2>
+  <div class="two-col" style="max-width: 700px; margin: 20px auto;">
+    <div class="clay-card" style="text-align: center;">
+      <p style="font-size: 0.9em; color: #777;">Average daily intake</p>
+      <p style="font-family: 'Playfair Display'; font-size: 3.5em; font-weight: 900; color: var(--terracotta);">100g</p>
+      <p class="handwritten" style="font-size: 1.2em; color: #999;">per day 😱</p>
+    </div>
+    <div class="clay-card fragment" style="text-align: center;">
+      <p style="font-size: 0.9em; color: #777;">WHO recommendation</p>
+      <p style="font-family: 'Playfair Display'; font-size: 3.5em; font-weight: 900; color: var(--fern);">25-36g</p>
+      <p class="handwritten" style="font-size: 1.2em; color: #999;">per day ✅</p>
+    </div>
+  </div>
+  <div class="fragment accent-box" style="max-width: 700px; margin: 20px auto; text-align: center;">
+    <p style="font-size: 1.3em;">We consume <span class="highlight-terracotta">3-4× more sugar</span> than recommended!</p>
+  </div>
+  <p class="source" style="color:#888;">WHO Guideline: Sugars intake for adults and children (2015) · Statista 2023</p>
+</section>
+
+<!-- SLIDE 19: Sugar Check -->
+<section data-background-color="#1a2e1f" data-transition="zoom">
+  <h2 style="color: var(--marigold); font-size: 3em;">Sugar Check! 🔍</h2>
+  <p style="font-size: 1.3em; color: var(--cream); margin-top: 30px;">Time to investigate:<br>How much sugar is <em>really</em> in our food?</p>
+</section>
+
+<!-- SLIDE 20: Starch → Sugar -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">How Starch Becomes Sugar</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto; text-align: center;">
+    <p style="font-size: 1.1em;">Complex carbohydrates (starch) are broken down into <strong>simple sugars</strong> during digestion.</p>
+    <div style="font-size: 2em; margin: 20px 0;">
+      🥔 → 🫠 → 🍬
+    </div>
+    <p class="fragment">The <strong>speed</strong> of this breakdown determines the glycemic impact!</p>
+  </div>
+</section>
+
+<!-- SLIDE 21: Mitochondria -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Mitochondria — Cell Powerhouses</h2>
+  <div class="glass-card" style="max-width: 650px; margin: 30px auto; text-align: center;">
+    <p class="emoji-big">⚡🔋</p>
+    <p style="font-size: 1.1em;">Every cell has mitochondria that produce energy (ATP).<br>
+    They are the <span class="highlight-marigold">powerhouses</span> of our cells.</p>
+  </div>
+</section>
+
+<!-- SLIDE 22: Fructose Sabotage -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">How Fructose Sabotages<br>Cell Powerhouses</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto;">
+    <ul style="font-size: 1.05em;">
+      <li class="fragment">Fructose is metabolized <strong>almost exclusively in the liver</strong></li>
+      <li class="fragment">It <span class="highlight-terracotta">inhibits fat burning</span> and energy production there</li>
+      <li class="fragment">The liver converts excess fructose <strong>directly into fat</strong>, leading to <span class="highlight-terracotta">fatty liver</span> (visceral fat)</li>
+    </ul>
+  </div>
+  <p class="source" style="color:#888;">Lustig, R. H. (2021). Metabolical: The Lure and the Lies of Processed Food. Harper Wave.</p>
+</section>
+
+<!-- SLIDE 23: NOVA Classes -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">What Do We Really Eat?<br><span style="font-size: 0.6em; color: var(--cream);">(NOVA Classification)</span></h2>
+  <div class="three-col" style="margin-top: 20px;">
+    <div class="glass-card" style="text-align: center; border: 2px solid #ef4444;">
+      <p style="font-size: 2.5em; font-weight: 900; color: #ef4444;">46.5%</p>
+      <p style="color: #fca5a5;"><strong>NOVA 4</strong><br>Ultra-processed</p>
+    </div>
+    <div class="glass-card" style="text-align: center; border: 2px solid #22c55e;">
+      <p style="font-size: 2.5em; font-weight: 900; color: #22c55e;">38.4%</p>
+      <p style="color: #86efac;"><strong>NOVA 1 & 2</strong><br>Unprocessed & Ingredients</p>
+    </div>
+    <div class="glass-card" style="text-align: center; border: 2px solid #facc15;">
+      <p style="font-size: 2.5em; font-weight: 900; color: #facc15;">15.2%</p>
+      <p style="color: #fde047;"><strong>NOVA 3</strong><br>Processed</p>
+    </div>
+  </div>
+  <p class="source">Monteiro, C.A., et al. (2018). NOVA food classification. Public Health Nutrition. · Schlinksy, et al. (2022). DGE.</p>
+</section>
+
+<!-- SLIDE 24: Omega-3 -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Omega-3: Fuel for the Brain</h2>
+  <div class="clay-card" style="max-width: 700px; margin: 20px auto;">
+    <div style="text-align: center;">
+      <p class="emoji-big">🐟 🧠</p>
+    </div>
+    <ul style="font-size: 1.05em;">
+      <li class="fragment">The brain is made up of a <strong>large percentage of fat</strong></li>
+      <li class="fragment">Omega-3 fatty acids are <strong>essential building blocks</strong> for nerve cells</li>
+      <li class="fragment">Studies show a <span class="highlight-fern">significant improvement in cognitive function</span> in children</li>
+    </ul>
+  </div>
+  <p class="source" style="color:#888;">van der Wurff, I. S., et al. (2016). Effect of omega-3 on cognition in children. Nutrients.</p>
+</section>
+
+<!-- SLIDE 25: Sleep -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">Sleep: The Foundation of Learning</h2>
+  <div style="max-width: 700px; margin: 20px auto;">
+    <div class="glass-card" style="margin-bottom: 12px;">
+      <p>😴 Sleep is an <strong>active process</strong> for memory formation</p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>🧠 During sleep, information transfers from <strong>short-term → long-term memory</strong></p>
+    </div>
+    <div class="glass-card fragment" style="margin-bottom: 12px;">
+      <p>📈 More sleep correlates directly with <strong>better academic performance</strong></p>
+    </div>
+    <div class="glass-card fragment">
+      <p>⚠️ Sleep deprivation → ↑ Ghrelin (more hunger) → ↑ IL-6 (cortisol) → Inflammation → <span class="highlight-terracotta">More visceral fat</span></p>
+    </div>
+  </div>
+  <p class="source">Matricciani, L., et al. (2012). Sleep duration and health outcomes in children. Sleep Medicine Reviews. · Schmid et al. (2008)</p>
+</section>
+
+<!-- SLIDE 26: Prerequisites for Self-Responsibility -->
+<section data-background-color="#f5f3ed" data-transition="slide">
+  <h2 style="color: var(--fern);">Prerequisites for<br>Personal Responsibility</h2>
+  <div class="clay-card" style="max-width: 600px; margin: 30px auto; text-align: center;">
+    <p style="font-size: 1.2em;">You can only take responsibility for your health<br>when you <strong>understand</strong> what's happening in your body.</p>
+    <p class="fragment handwritten" style="font-size: 1.5em; color: var(--fern); margin-top: 20px;">Knowledge → Awareness → Action</p>
+  </div>
+  <p class="source" style="color:#888;">Lustig, R. H., Schmidt, L. A., & Brindis, C. D. (2012). The toxic truth about sugar. Nature.</p>
+</section>
+
+<!-- SLIDE 27: 3 Principles -->
+<section data-background-color="#1a2e1f" data-transition="fade">
+  <h2 style="color: var(--marigold);">What Can We Do?</h2>
+  <div class="three-col" style="margin-top: 30px;">
+    <div class="glass-card" style="text-align: center; border-top: 3px solid var(--fern-light);">
+      <p style="font-size: 2.5em;">🫀</p>
+      <h3 style="color: var(--fern-light);">1. Protect<br>the Liver</h3>
+    </div>
+    <div class="glass-card fragment" style="text-align: center; border-top: 3px solid var(--marigold);">
+      <p style="font-size: 2.5em;">🦠</p>
+      <h3 style="color: var(--marigold);">2. Feed<br>the Gut</h3>
+    </div>
+    <div class="glass-card fragment" style="text-align: center; border-top: 3px solid var(--cream);">
+      <p style="font-size: 2.5em;">🧠</p>
+      <h3>3. Support<br>the Brain</h3>
+    </div>
+  </div>
+  <p class="source">Based on Lustig, R. H. (2021). Metabolical. Harper Wave.</p>
+</section>
+
+<!-- SLIDE 28: Thank You -->
+<section data-background-color="#1a2e1f" data-transition="zoom">
+  <h1 style="color: var(--cream); font-size: 3.5em;">Thank You!</h1>
+  <p class="handwritten" style="font-size: 2em; color: var(--marigold); margin-top: 20px;">The solution lies in the body.</p>
+  <p style="font-size: 1.2em; color: var(--fern-light); margin-top: 40px;">🧠 + 🥗 + 😴 + 🏃 = 💪</p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  controlsTutorial: true,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+});
+</script>
+</body>
+</html>
